@@ -209,6 +209,9 @@ function kozhevnya_smtp_expect($fp, string $code): string
       break;
     }
   }
+  if ($line === '') {
+    throw new RuntimeException('SMTP: пустой ответ сервера');
+  }
   if (strpos($line, $code) !== 0) {
     throw new RuntimeException('SMTP: ' . trim($line));
   }
@@ -221,6 +224,92 @@ function kozhevnya_smtp_cmd($fp, string $command, string $expect): string
   return kozhevnya_smtp_expect($fp, $expect);
 }
 
+function kozhevnya_smtp_ipv4_list(string $host): array
+{
+  if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+    return [$host];
+  }
+  $ips = [];
+  $list = @gethostbynamel($host);
+  if (is_array($list)) {
+    foreach ($list as $ip) {
+      if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+        $ips[] = $ip;
+      }
+    }
+  }
+  return array_values(array_unique($ips));
+}
+
+function kozhevnya_smtp_targets(array $smtp): array
+{
+  $host = trim((string) ($smtp['smtp_host'] ?? ''));
+  $serverName = trim((string) ($smtp['smtp_tls_servername'] ?? '')) ?: $host;
+  $configuredIp = trim((string) ($smtp['smtp_connect_host'] ?? ''));
+  $port = (int) ($smtp['smtp_port'] ?? 465);
+  $secure = !empty($smtp['smtp_secure']);
+  $startTls = !empty($smtp['smtp_require_tls']);
+  $targets = [];
+  $seen = [];
+
+  $add = function (string $connect, int $usePort, bool $useSecure, bool $useStartTls) use (&$targets, &$seen, $serverName) {
+    if ($connect === '') {
+      return;
+    }
+    $key = $connect . ':' . $usePort . ':' . ($useSecure ? '1' : '0');
+    if (isset($seen[$key])) {
+      return;
+    }
+    $seen[$key] = true;
+    $targets[] = [
+      'connect' => $connect,
+      'port' => $usePort,
+      'secure' => $useSecure,
+      'starttls' => $useStartTls,
+      'servername' => $serverName !== '' ? $serverName : $connect,
+    ];
+  };
+
+  if ($configuredIp !== '') {
+    $add($configuredIp, $port, $secure, $startTls);
+  }
+  $add($host, $port, $secure, $startTls);
+  if ($port === 465 || $secure) {
+    $add($host, 587, false, true);
+  }
+  foreach (kozhevnya_smtp_ipv4_list($host) as $ip) {
+    $add($ip, 465, true, false);
+  }
+
+  return $targets;
+}
+
+function kozhevnya_smtp_open(array $target, int $timeout)
+{
+  $scheme = !empty($target['secure']) ? 'ssl' : 'tcp';
+  $context = stream_context_create([
+    'ssl' => [
+      'peer_name' => $target['servername'],
+      'SNI_enabled' => true,
+      'verify_peer' => true,
+      'verify_peer_name' => true,
+    ],
+  ]);
+  $fp = @stream_socket_client(
+    $scheme . '://' . $target['connect'] . ':' . $target['port'],
+    $errno,
+    $errstr,
+    $timeout,
+    STREAM_CLIENT_CONNECT,
+    $context
+  );
+  if ($fp === false) {
+    throw new RuntimeException('Не удалось подключиться к SMTP: ' . ($errstr !== '' ? $errstr : 'errno ' . $errno));
+  }
+  stream_set_timeout($fp, $timeout);
+  return $fp;
+}
+
 function kozhevnya_send_mail(array $config, string $subject, string $body): void
 {
   $smtp = kozhevnya_smtp_settings($config);
@@ -229,80 +318,83 @@ function kozhevnya_send_mail(array $config, string $subject, string $body): void
     throw new RuntimeException('Не указан to_email');
   }
 
-  $fromEmail = (string) ($smtp['from_email'] ?? '');
-  $fromName = (string) ($smtp['from_name'] ?? 'Kozhevnya');
-  $user = (string) ($smtp['smtp_auth_user'] ?? $smtp['smtp_user'] ?? '');
+  $user = trim((string) ($smtp['smtp_auth_user'] ?? $smtp['smtp_user'] ?? ''));
   $pass = (string) ($smtp['smtp_pass'] ?? '');
-  $host = (string) ($smtp['smtp_host'] ?? '');
-  $connectHost = trim((string) ($smtp['smtp_connect_host'] ?? '')) ?: $host;
-  $port = (int) ($smtp['smtp_port'] ?? 465);
-  $secure = !empty($smtp['smtp_secure']);
-  $startTls = !empty($smtp['smtp_require_tls']);
+  $fromName = trim((string) ($smtp['from_name'] ?? 'Kozhevnya'));
+  if ($fromName === '') {
+    $fromName = 'Kozhevnya';
+  }
+  $fromEmail = $user !== '' ? $user : trim((string) ($smtp['from_email'] ?? ''));
+  if ($fromEmail === '' || !filter_var($fromEmail, FILTER_VALIDATE_EMAIL)) {
+    throw new RuntimeException('Не указан smtp_user / from_email');
+  }
+
   $timeout = max(5, (int) (($smtp['smtp_connection_timeout_ms'] ?? 15000) / 1000));
-  $serverName = (string) ($smtp['smtp_tls_servername'] ?? $host);
+  $lastError = null;
 
-  $scheme = $secure ? 'ssl' : 'tcp';
-  $context = stream_context_create([
-    'ssl' => [
-      'peer_name' => $serverName,
-      'SNI_enabled' => true,
-    ],
-  ]);
+  foreach (kozhevnya_smtp_targets($smtp) as $target) {
+    $fp = null;
+    try {
+      $fp = kozhevnya_smtp_open($target, $timeout);
+      kozhevnya_smtp_expect($fp, '220');
+      kozhevnya_smtp_cmd($fp, 'EHLO kozhevnya.ru', '250');
 
-  $fp = @stream_socket_client(
-    $scheme . '://' . $connectHost . ':' . $port,
-    $errno,
-    $errstr,
-    $timeout,
-    STREAM_CLIENT_CONNECT,
-    $context
-  );
-  if ($fp === false) {
-    throw new RuntimeException('Не удалось подключиться к SMTP: ' . $errstr);
-  }
-  stream_set_timeout($fp, $timeout);
-  kozhevnya_smtp_expect($fp, '220');
-  kozhevnya_smtp_cmd($fp, 'EHLO kozhevnya.ru', '250');
+      if (empty($target['secure']) && !empty($target['starttls'])) {
+        kozhevnya_smtp_cmd($fp, 'STARTTLS', '220');
+        $crypto = defined('STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT')
+          ? STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT
+          : STREAM_CRYPTO_METHOD_TLS_CLIENT;
+        if (!stream_socket_enable_crypto($fp, true, $crypto)) {
+          throw new RuntimeException('Не удалось включить TLS');
+        }
+        kozhevnya_smtp_cmd($fp, 'EHLO kozhevnya.ru', '250');
+      }
 
-  if (!$secure && $startTls) {
-    kozhevnya_smtp_cmd($fp, 'STARTTLS', '220');
-    if (!stream_socket_enable_crypto($fp, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
-      throw new RuntimeException('Не удалось включить TLS');
+      kozhevnya_smtp_cmd($fp, 'AUTH LOGIN', '334');
+      kozhevnya_smtp_cmd($fp, base64_encode($user), '334');
+      kozhevnya_smtp_cmd($fp, base64_encode($pass), '235');
+
+      $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+      $encodedFrom = '=?UTF-8?B?' . base64_encode($fromName) . '?= <' . $fromEmail . '>';
+
+      foreach ($toList as $to) {
+        if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
+          throw new RuntimeException('Некорректный to_email');
+        }
+        kozhevnya_smtp_cmd($fp, 'MAIL FROM:<' . $fromEmail . '>', '250');
+        kozhevnya_smtp_cmd($fp, 'RCPT TO:<' . $to . '>', '250');
+        kozhevnya_smtp_cmd($fp, 'DATA', '354');
+        $replyTo = trim(explode(',', (string) ($smtp['to_email'] ?? ''))[0]);
+        $headers = [
+          'From: ' . $encodedFrom,
+          'To: ' . $to,
+          'Subject: ' . $encodedSubject,
+          'MIME-Version: 1.0',
+          'Content-Type: text/plain; charset=UTF-8',
+          'Content-Transfer-Encoding: 8bit',
+        ];
+        if ($replyTo !== '' && strcasecmp($replyTo, $fromEmail) !== 0 && filter_var($replyTo, FILTER_VALIDATE_EMAIL)) {
+          $headers[] = 'Reply-To: ' . $replyTo;
+        }
+        $message = implode("\r\n", $headers) . "\r\n\r\n"
+          . str_replace("\n", "\r\n", str_replace("\r\n", "\n", $body))
+          . "\r\n.";
+        fwrite($fp, $message . "\r\n");
+        kozhevnya_smtp_expect($fp, '250');
+      }
+
+      fwrite($fp, "QUIT\r\n");
+      fclose($fp);
+      return;
+    } catch (Throwable $error) {
+      $lastError = $error;
+      if ($fp) {
+        fclose($fp);
+      }
     }
-    kozhevnya_smtp_cmd($fp, 'EHLO kozhevnya.ru', '250');
   }
 
-  kozhevnya_smtp_cmd($fp, 'AUTH LOGIN', '334');
-  kozhevnya_smtp_cmd($fp, base64_encode($user), '334');
-  kozhevnya_smtp_cmd($fp, base64_encode($pass), '235');
-
-  $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
-  $encodedFrom = '=?UTF-8?B?' . base64_encode($fromName) . '?= <' . $fromEmail . '>';
-
-  foreach ($toList as $to) {
-    if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
-      throw new RuntimeException('Некорректный to_email');
-    }
-    kozhevnya_smtp_cmd($fp, 'MAIL FROM:<' . $fromEmail . '>', '250');
-    kozhevnya_smtp_cmd($fp, 'RCPT TO:<' . $to . '>', '250');
-    kozhevnya_smtp_cmd($fp, 'DATA', '354');
-    $message = implode("\r\n", [
-      'From: ' . $encodedFrom,
-      'To: ' . $to,
-      'Subject: ' . $encodedSubject,
-      'MIME-Version: 1.0',
-      'Content-Type: text/plain; charset=UTF-8',
-      'Content-Transfer-Encoding: 8bit',
-      '',
-      str_replace("\n", "\r\n", str_replace("\r\n", "\n", $body)),
-      '.',
-    ]);
-    fwrite($fp, $message . "\r\n");
-    kozhevnya_smtp_expect($fp, '250');
-  }
-
-  fwrite($fp, "QUIT\r\n");
-  fclose($fp);
+  throw $lastError instanceof Throwable ? $lastError : new RuntimeException('Не удалось отправить письмо');
 }
 
 function kozhevnya_format_submitted_at(string $iso): string
@@ -361,11 +453,17 @@ function kozhevnya_lead_email_body(array $payload, string $company, string $name
 function kozhevnya_smtp_error_message(Throwable $error): string
 {
   $message = $error->getMessage();
-  if (stripos($message, '535') !== false || stripos($message, 'auth') !== false) {
-    return 'Не удалось авторизоваться на SMTP. Проверьте smtp_user и smtp_pass в php/config.local.php.';
+  if (stripos($message, '535') !== false || stripos($message, 'authentication failed') !== false) {
+    return 'Яндекс не принял логин или пароль SMTP. Нужен пароль приложения почты, не обычный пароль.';
   }
-  if (stripos($message, 'подключиться') !== false || stripos($message, 'timeout') !== false) {
-    return 'Не удалось подключиться к SMTP. Проверьте интернет и smtp-настройки.';
+  if (stripos($message, '553') !== false || stripos($message, 'sender address') !== false) {
+    return 'Яндекс отклонил адрес отправителя. Отправка идёт от ящика SMTP, не от noreply@, пока этот адрес не добавлен в ящик.';
+  }
+  if (stripos($message, 'подключиться') !== false || stripos($message, 'timeout') !== false || stripos($message, 'timed out') !== false) {
+    return 'Не удалось подключиться к SMTP Яндекса с сервера. Проверьте, что в php/config.local.php указаны smtp_provider=yandex, smtp_user и пароль приложения.';
+  }
+  if (preg_match('/SMTP:\s*(.+)$/u', $message, $match)) {
+    return 'Почта не отправлена: ' . $match[1];
   }
   return 'Не удалось отправить письмо. Проверьте SMTP-настройки в php/config.local.php.';
 }
