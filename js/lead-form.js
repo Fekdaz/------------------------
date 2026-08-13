@@ -129,7 +129,10 @@
   function getSmartCaptchaClientKey() {
     var config = window.KOZHEVNYA_CONFIG || {};
     var key = config.yandexSmartCaptchaClientKey;
-    return typeof key === "string" && key.trim() ? key.trim() : "";
+    if (typeof key !== "string") return "";
+    var trimmed = key.trim();
+    if (!trimmed || trimmed.indexOf("YOUR_") === 0) return "";
+    return trimmed;
   }
 
   var captchaState = {
@@ -377,6 +380,10 @@
       });
   }
 
+  var closeTimer = null;
+  var toastTimer = null;
+  var CLOSE_MS = 420;
+
   function getModal() {
     return document.getElementById(MODAL_ID);
   }
@@ -389,9 +396,20 @@
       window.KozhevnyaMetrika.trackLeadFormOpen();
     }
 
+    if (closeTimer) {
+      window.clearTimeout(closeTimer);
+      closeTimer = null;
+    }
+
     modal.hidden = false;
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("lead-modal-open");
+
+    window.requestAnimationFrame(function () {
+      window.requestAnimationFrame(function () {
+        modal.classList.add("is-open");
+      });
+    });
 
     initCaptcha();
 
@@ -403,23 +421,55 @@
     }
   }
 
-  function closeModal() {
+  function closeModal(afterClose) {
     var modal = getModal();
-    if (!modal) return;
+    if (!modal) {
+      if (typeof afterClose === "function") afterClose();
+      return;
+    }
 
-    modal.hidden = true;
+    modal.classList.remove("is-open");
     modal.setAttribute("aria-hidden", "true");
     document.body.classList.remove("lead-modal-open");
+
+    if (closeTimer) window.clearTimeout(closeTimer);
+    closeTimer = window.setTimeout(function () {
+      modal.hidden = true;
+      closeTimer = null;
+      if (typeof afterClose === "function") afterClose();
+    }, CLOSE_MS);
+  }
+
+  function showLeadToast() {
+    var toast = document.getElementById("lead-toast");
+    if (!toast) {
+      toast = document.createElement("div");
+      toast.id = "lead-toast";
+      toast.className = "lead-toast";
+      toast.setAttribute("role", "status");
+      toast.setAttribute("aria-live", "polite");
+      toast.innerHTML =
+        '<p class="lead-toast__title">Заявка отправлена</p>' +
+        '<p class="lead-toast__text">В скором времени менеджер свяжется с вами.</p>';
+      document.body.appendChild(toast);
+    }
+
+    toast.classList.remove("is-visible");
+    void toast.offsetWidth;
+    toast.classList.add("is-visible");
+
+    if (toastTimer) window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(function () {
+      toast.classList.remove("is-visible");
+      toastTimer = null;
+    }, 5600);
   }
 
   function showSuccess() {
-    var modal = getModal();
-    if (!modal) return;
-
-    var formWrap = modal.querySelector(".lead-modal__form-wrap");
-    var success = modal.querySelector(".lead-modal__success");
-    if (formWrap) formWrap.hidden = true;
-    if (success) success.hidden = false;
+    closeModal(function () {
+      resetModal();
+    });
+    showLeadToast();
   }
 
   function resetModal() {
