@@ -23,6 +23,21 @@
     <link rel="icon" href="assets/512.png" type="image/png" sizes="512x512" />
     <link rel="apple-touch-icon" href="assets/192.png" sizes="192x192" />
     <link rel="manifest" href="site.webmanifest" />
+    <script>
+      (function () {
+        if (location.hash === "#cases" || location.hash === "#leather") {
+          document.documentElement.classList.add("is-instant-scroll");
+          if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+        }
+        try {
+          var dir = sessionStorage.getItem("kozhevnya-page-transition");
+          if (dir) {
+            sessionStorage.removeItem("kozhevnya-page-transition");
+            document.documentElement.classList.add("page-transition-enter", "page-transition-enter--" + dir);
+          }
+        } catch (error) {}
+      })();
+    </script>
   </head>
   <body>
     <header class="site-header">
@@ -145,7 +160,7 @@
               </p>
             </div>
           </div>
-          <a class="btn btn--secondary cases__btn" href="#works">
+          <a class="btn btn--secondary cases__btn" href="nashi-raboty.html">
             Посмотреть наши работы
             <span class="btn__arrow" aria-hidden="true">→</span>
           </a>
@@ -323,7 +338,7 @@
             </p>
           </div>
           <div class="block__actions leather__actions">
-            <a class="btn btn--secondary" href="#catalog">
+            <a class="btn btn--secondary" href="katalog-kozhi.html">
               Посмотреть каталог кожи
               <span class="btn__arrow" aria-hidden="true">→</span>
             </a>
@@ -436,7 +451,7 @@
           <div class="nearby__text-group">
             <p class="block__text">
               Долгая доставка из&nbsp;Китая, Индии или Турции мешает вам
-              масштабироваться, но&nbsp;не&nbsp;хочется переплачивать
+              масштабироваться, &nbsp;не&nbsp;хочется переплачивать
               локальным производителям?
             </p>
             <p class="block__text">
@@ -882,5 +897,18 @@
     <script src="js/mobile-nav.js?v=20260813-4"></script>
     <script src="js/cookie-consent.js?v=20260813-4"></script>
     <script src="js/lead-form.js?v=20260813-4"></script>
+    <script src="js/page-transition.js?v=20260813-6"></script>
+    <script>
+      (function () {
+        var hash = location.hash;
+        if (hash !== "#cases" && hash !== "#leather") return;
+        var target = document.querySelector(hash);
+        if (!target) return;
+        target.scrollIntoView({ behavior: "auto", block: "start" });
+        window.setTimeout(function () {
+          document.documentElement.classList.remove("is-instant-scroll");
+        }, 50);
+      })();
+    </script>
   </body>
 </html>

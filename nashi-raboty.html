@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Наши работы | Кожевня</title>
+    <meta
+      name="description"
+      content="Портфолио кожаных изделий Кожевни: корпоративные заказы, линейки для маркетплейсов и штучные работы."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css?v=20260813-5" />
+    <link rel="stylesheet" href="css/gallery.css?v=20260813-5" />
+    <link rel="icon" href="assets/32.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="assets/16.png" type="image/png" sizes="16x16" />
+    <link rel="icon" href="assets/48.png" type="image/png" sizes="48x48" />
+    <link rel="icon" href="assets/64.png" type="image/png" sizes="64x64" />
+    <link rel="icon" href="assets/192.png" type="image/png" sizes="192x192" />
+    <link rel="icon" href="assets/512.png" type="image/png" sizes="512x512" />
+    <link rel="apple-touch-icon" href="assets/192.png" sizes="192x192" />
+    <link rel="manifest" href="site.webmanifest" />
+    <script>
+      (function () {
+        try {
+          var dir = sessionStorage.getItem("kozhevnya-page-transition");
+          if (dir) {
+            sessionStorage.removeItem("kozhevnya-page-transition");
+            document.documentElement.classList.add("page-transition-enter", "page-transition-enter--" + dir);
+          }
+        } catch (error) {}
+      })();
+    </script>
+  </head>
+  <body class="gallery-page" data-gallery="works">
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="gallery-back" href="index.html#cases" aria-label="Назад к блоку кейсов">
+          <span class="gallery-back__triangle" aria-hidden="true"></span>
+        </a>
+        <a class="site-header__logo" href="index.html" aria-label="Кожевня — на главную">
+          <img
+            class="site-header__logo-image"
+            src="assets/logo-dark.png"
+            alt="Кожевня"
+            width="160"
+            height="48"
+          />
+        </a>
+        <h1 class="site-header__title">Наши работы</h1>
+      </div>
+    </header>
+
+    <main class="gallery">
+      <div class="gallery-grid" id="gallery-grid"></div>
+    </main>
+
+    <div
+      class="gallery-lightbox"
+      id="gallery-lightbox"
+      hidden
+      aria-hidden="true"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Просмотр фото"
+    >
+      <button class="gallery-lightbox__close" id="gallery-lightbox-close" type="button" aria-label="Закрыть">
+        ×
+      </button>
+      <button class="gallery-lightbox__nav gallery-lightbox__nav--prev" id="gallery-lightbox-prev" type="button" aria-label="Предыдущее фото">
+        <span class="gallery-lightbox__nav-icon" aria-hidden="true"></span>
+      </button>
+      <div class="gallery-lightbox__stage" id="gallery-lightbox-stage"></div>
+      <button class="gallery-lightbox__nav gallery-lightbox__nav--next" id="gallery-lightbox-next" type="button" aria-label="Следующее фото">
+        <span class="gallery-lightbox__nav-icon" aria-hidden="true"></span>
+      </button>
+      <p class="gallery-lightbox__counter" id="gallery-lightbox-counter"></p>
+    </div>
+
+    <script src="js/legal-config.js?v=20260813-5"></script>
+    <script src="js/legal-config.local.js?v=20260813-5"></script>
+    <script src="js/consent-log.js?v=20260813-5"></script>
+    <script src="js/yandex-metrika.js?v=20260813-5"></script>
+    <script src="js/marketing-tags.js?v=20260813-5"></script>
+    <script src="js/third-party-scripts.js?v=20260813-5"></script>
+    <script src="js/cookie-consent.js?v=20260813-5"></script>
+    <script src="js/gallery-data.js?v=20260813-5"></script>
+    <script src="js/gallery.js?v=20260813-5"></script>
+    <script src="js/page-transition.js?v=20260813-6"></script>
+  </body>
+</html>

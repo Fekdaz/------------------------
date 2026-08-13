@@ -1,0 +1,324 @@
+html:has(.gallery-page) {
+  background: #f6f3ef;
+}
+
+.gallery-page {
+  min-height: 100dvh;
+  background: #f6f3ef;
+}
+
+.gallery-page .site-header__inner {
+  justify-content: flex-start;
+  gap: clamp(12px, 2vw, 24px);
+}
+
+.gallery-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  margin-left: -8px;
+  color: var(--text);
+  border-radius: 8px;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.gallery-back:hover {
+  color: var(--green);
+}
+
+.gallery-back:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+.gallery-back__triangle {
+  display: block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 11px 18px 11px 0;
+  border-color: transparent currentColor transparent transparent;
+}
+
+.gallery-page .site-header__title {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin: 0 0 0 auto;
+  font-size: clamp(20px, 2.2vw, 32px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-align: right;
+}
+
+.gallery-page .site-header__logo {
+  margin-left: 0;
+}
+
+.gallery {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: calc(var(--header-height) + clamp(20px, 3vh, 36px))
+    var(--header-gutter) clamp(48px, 8vh, 80px);
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: clamp(10px, 1.4vw, 18px);
+}
+
+.gallery-grid__item {
+  position: relative;
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: #ddd6ce;
+  cursor: zoom-in;
+}
+
+.gallery-grid__item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1);
+  transition: transform 0.45s ease;
+}
+
+.gallery-grid__item:hover img,
+.gallery-grid__item:focus-visible img {
+  transform: scale(1.05);
+}
+
+.gallery-grid__item:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 3px;
+}
+
+.gallery-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 72px 80px 40px;
+  background: rgba(12, 8, 6, 0.92);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.32s ease, visibility 0.32s ease;
+}
+
+.gallery-lightbox.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.gallery-lightbox__stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.gallery-lightbox__photo {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gallery-lightbox__photo img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.gallery-lightbox__photo.is-active {
+  z-index: 2;
+}
+
+.gallery-lightbox__photo.is-enter-next {
+  animation: gallery-in-next 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.gallery-lightbox__photo.is-enter-prev {
+  animation: gallery-in-prev 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.gallery-lightbox__photo.is-leave-next {
+  animation: gallery-out-next 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.gallery-lightbox__photo.is-leave-prev {
+  animation: gallery-out-prev 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes gallery-in-next {
+  from {
+    opacity: 0;
+    transform: translateX(48px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes gallery-in-prev {
+  from {
+    opacity: 0;
+    transform: translateX(-48px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes gallery-out-next {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-48px) scale(0.98);
+  }
+}
+
+@keyframes gallery-out-prev {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(48px) scale(0.98);
+  }
+}
+
+.gallery-lightbox__nav,
+.gallery-lightbox__close {
+  position: absolute;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+
+.gallery-lightbox__nav {
+  top: 50%;
+  width: 56px;
+  height: 72px;
+  transform: translateY(-50%);
+}
+
+.gallery-lightbox__nav--prev {
+  left: 12px;
+}
+
+.gallery-lightbox__nav--next {
+  right: 12px;
+}
+
+.gallery-lightbox__nav-icon {
+  display: block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+.gallery-lightbox__nav--prev .gallery-lightbox__nav-icon {
+  border-width: 12px 18px 12px 0;
+  border-color: transparent currentColor transparent transparent;
+}
+
+.gallery-lightbox__nav--next .gallery-lightbox__nav-icon {
+  border-width: 12px 0 12px 18px;
+  border-color: transparent transparent transparent currentColor;
+}
+
+.gallery-lightbox__close {
+  top: 16px;
+  right: 16px;
+  width: 48px;
+  height: 48px;
+  font-size: 32px;
+  line-height: 1;
+}
+
+.gallery-lightbox__nav:hover,
+.gallery-lightbox__close:hover {
+  color: var(--green);
+}
+
+.gallery-lightbox__nav:focus-visible,
+.gallery-lightbox__close:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+.gallery-lightbox__counter {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+body.gallery-lightbox-open {
+  overflow: hidden;
+}
+
+@media (max-width: 767px) {
+  .gallery-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .gallery-lightbox {
+    padding: 64px 8px 56px;
+  }
+
+  .gallery-lightbox__nav {
+    width: 40px;
+    height: 56px;
+  }
+
+  .gallery-lightbox__nav--prev {
+    left: 0;
+  }
+
+  .gallery-lightbox__nav--next {
+    right: 0;
+  }
+
+  .gallery-page .site-header__title {
+    font-size: 18px;
+  }
+}
