@@ -11,6 +11,8 @@ return [
   'allowed_origins' => [
     'https://tennerg.ru',
     'https://www.tennerg.ru',
+    'https://kozhevnya.ru',
+    'https://www.kozhevnya.ru',
   ],
   'allow_localhost_any_port' => false,
   'trust_proxy' => true,

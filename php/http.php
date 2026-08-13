@@ -36,15 +36,50 @@ function kozhevnya_client_ip(array $config): string
   return '0.0.0.0';
 }
 
+function kozhevnya_request_host(): string
+{
+  $host = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
+  if ($host === '') {
+    return '';
+  }
+  return explode(':', $host)[0];
+}
+
+function kozhevnya_origin_host(string $origin): string
+{
+  $host = parse_url($origin, PHP_URL_HOST);
+  return is_string($host) ? strtolower($host) : '';
+}
+
+function kozhevnya_hosts_match(string $a, string $b): bool
+{
+  if ($a === '' || $b === '') {
+    return false;
+  }
+  if ($a === $b) {
+    return true;
+  }
+  return $a === 'www.' . $b || $b === 'www.' . $a;
+}
+
 function kozhevnya_origin_allowed(string $origin, array $config): bool
 {
   if ($origin === '') {
     return true;
   }
 
-  $normalized = strtolower($origin);
+  $normalized = strtolower(rtrim($origin, '/'));
+  $originHost = kozhevnya_origin_host($origin);
+  if (kozhevnya_hosts_match($originHost, kozhevnya_request_host())) {
+    return true;
+  }
+
   foreach ($config['allowed_origins'] ?? [] as $allowed) {
-    if (strtolower((string) $allowed) === $normalized) {
+    $allowed = strtolower(rtrim((string) $allowed, '/'));
+    if ($allowed === $normalized) {
+      return true;
+    }
+    if (kozhevnya_hosts_match($originHost, kozhevnya_origin_host($allowed))) {
       return true;
     }
   }
@@ -53,8 +88,7 @@ function kozhevnya_origin_allowed(string $origin, array $config): bool
     return false;
   }
 
-  $host = parse_url($origin, PHP_URL_HOST);
-  return $host === 'localhost' || $host === '127.0.0.1';
+  return $originHost === 'localhost' || $originHost === '127.0.0.1';
 }
 
 function kozhevnya_apply_cors(array $config): bool
