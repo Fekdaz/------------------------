@@ -9,8 +9,6 @@ return [
   'smtp_connection_timeout_ms' => 15000,
   'yandex_smart_captcha_secret' => '',
   'allowed_origins' => [
-    'https://kozhevnya.ru',
-    'https://www.kozhevnya.ru',
     'https://tennerg.ru',
     'https://www.tennerg.ru',
   ],

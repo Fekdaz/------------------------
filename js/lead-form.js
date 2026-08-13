@@ -83,7 +83,7 @@
 
   function formatLeadMessage(values, marketingConsent, submittedAt, consentMeta) {
     return [
-      "Новая заявка с сайта kozhevnya.ru",
+      "Новая заявка с сайта tennerg.ru",
       "",
       "Компания: " + (values.company || "—"),
       "Имя: " + values.name,
@@ -338,7 +338,7 @@
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        source: "kozhevnya.ru",
+        source: "tennerg.ru",
         text: record.message,
         formId: record.formId,
         page: record.page,

@@ -99,6 +99,33 @@ sync_site() {
   cp -a "$APP_ROOT/js/." "$PUBLIC_HTML/js/"
   cp -a "$APP_ROOT/php/." "$PUBLIC_HTML/php/"
 
+  copy_assets() {
+    local src="$1"
+    if [ -d "$src" ] && [ "$(ls -A "$src" 2>/dev/null)" ]; then
+      mkdir -p "$PUBLIC_HTML/assets"
+      cp -a "$src/." "$PUBLIC_HTML/assets/"
+      log "Скопированы картинки из $src"
+      return 0
+    fi
+    return 1
+  }
+
+  copy_assets "$APP_ROOT/assets" \
+    || copy_assets "$APP_ROOT/hosting-upload/kozhevnya/assets" \
+    || copy_assets "$SITE_ROOT/assets" \
+    || warn "Папка assets/ не найдена. Картинки нужно загрузить в $PUBLIC_HTML/assets/"
+
+  for extra in fonts images media favicon.ico favicon.png apple-touch-icon.png robots.txt; do
+    if [ -e "$APP_ROOT/$extra" ]; then
+      if [ -d "$APP_ROOT/$extra" ]; then
+        mkdir -p "$PUBLIC_HTML/$extra"
+        cp -a "$APP_ROOT/$extra/." "$PUBLIC_HTML/$extra/"
+      else
+        cp -f "$APP_ROOT/$extra" "$PUBLIC_HTML/$extra"
+      fi
+    fi
+  done
+
   local latest_php_config
   latest_php_config="$(ls -t "$BACKUP_DIR"/config.local.php.*.bak 2>/dev/null | head -1 || true)"
   if [ -n "$latest_php_config" ]; then

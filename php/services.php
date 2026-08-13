@@ -289,7 +289,7 @@ function kozhevnya_lead_email_body(array $payload, string $company, string $name
   $submittedAt = kozhevnya_sanitize($payload['submittedAt'] ?? '', 64);
 
   $lines = [
-    'Новая заявка с сайта kozhevnya.ru',
+    'Новая заявка с сайта tennerg.ru',
     '',
     'Компания: ' . ($company !== '' ? $company : '—'),
     'Имя: ' . $name,

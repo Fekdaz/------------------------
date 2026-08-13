@@ -9,7 +9,12 @@
   var address =
     config.locationAddress ||
     "109383, г. Москва, 1-й Красковский проезд, 38А, стр. 40, м. «Лухмановская»";
-  var apiKey = config.yandexMapsApiKey;
+  var apiKey =
+    typeof config.yandexMapsApiKey === "string" &&
+    config.yandexMapsApiKey.trim() &&
+    config.yandexMapsApiKey.indexOf("YOUR_") !== 0
+      ? config.yandexMapsApiKey.trim()
+      : "";
   var apiScriptPromise = null;
   var instances = [];
 

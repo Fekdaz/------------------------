@@ -27,6 +27,8 @@ export default {
   yandex_smart_captcha_secret: "",
 
   allowed_origins: [
+    "https://tennerg.ru",
+    "https://www.tennerg.ru",
     "https://kozhevnya.ru",
     "https://www.kozhevnya.ru",
     "http://localhost:8080",

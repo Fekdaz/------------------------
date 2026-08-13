@@ -5,7 +5,7 @@
  */
 window.KOZHEVNYA_CONFIG = Object.assign({}, window.KOZHEVNYA_CONFIG || {}, {
   leadWebhookUrl: "/api/send-lead",
-  yandexMetrikaCounterId: 00000000,
-  yandexMapsApiKey: "YOUR_YANDEX_MAPS_API_KEY",
-  yandexSmartCaptchaClientKey: "YOUR_SMARTCAPTCHA_CLIENT_KEY",
+  yandexMetrikaCounterId: null,
+  yandexMapsApiKey: null,
+  yandexSmartCaptchaClientKey: null,
 });

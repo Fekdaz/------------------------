@@ -39,7 +39,7 @@ export function buildConsentSection(payload, marketingConsent) {
 
 export function buildLeadEmailBody(company, name, phone, email, comment, page, payload, marketingConsent) {
   return [
-    "Новая заявка с сайта kozhevnya.ru",
+    "Новая заявка с сайта tennerg.ru",
     "",
     "Компания: " + (company || "—"),
     "Имя: " + name,

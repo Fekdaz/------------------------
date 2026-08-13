@@ -1,10 +1,10 @@
 /** Версии юридических документов — увеличивайте при изменении текста на сайте */
 window.KOZHEVNYA_LEGAL = {
-  privacyPolicyVersion: "1.1",
-  personalDataConsentVersion: "1.0",
-  marketingConsentVersion: "1.0",
-  cookiePolicyVersion: "1.1",
-  updatedAt: "06.08.2026",
+  privacyPolicyVersion: "1.2",
+  personalDataConsentVersion: "1.1",
+  marketingConsentVersion: "1.1",
+  cookiePolicyVersion: "1.2",
+  updatedAt: "13.08.2026",
 };
 
 /** Настройки интеграций (переопределяются в legal-config.local.js на сервере) */
