@@ -8,11 +8,20 @@ header('Referrer-Policy: strict-origin-when-cross-origin');
 
 $phpRoot = __DIR__;
 $configFile = $phpRoot . '/config.local.php';
-if (!is_file($configFile)) {
-  $configFile = $phpRoot . '/config.example.php';
+$exampleFile = $phpRoot . '/config.example.php';
+if (!is_file($configFile) || !is_readable($configFile)) {
+  $configFile = $exampleFile;
 }
 
-$config = require $configFile;
+try {
+  $config = include $configFile;
+} catch (Throwable $e) {
+  try {
+    $config = is_file($exampleFile) ? include $exampleFile : [];
+  } catch (Throwable $e2) {
+    $config = [];
+  }
+}
 if (!is_array($config)) {
   $config = [];
 }
@@ -24,5 +33,4 @@ $config['rate_limit_dir'] = $config['data_dir'] . '/rate-limit';
 
 require $phpRoot . '/http.php';
 require $phpRoot . '/services.php';
-require $phpRoot . '/journal.php';
 require $phpRoot . '/routes.php';

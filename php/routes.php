@@ -15,7 +15,7 @@ function kozhevnya_dispatch(array $config): void
     if (!kozhevnya_apply_cors($config)) {
       kozhevnya_json(403, ['ok' => false]);
     }
-    header('Access-Control-Allow-Methods: POST, OPTIONS');
+    header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
     header('Access-Control-Allow-Headers: Content-Type');
     http_response_code(204);
     exit;
@@ -187,6 +187,7 @@ function kozhevnya_route_send_lead(array $config, string $ip): void
 
 function kozhevnya_route_journal(array $config, string $ip, string $method): void
 {
+  require_once __DIR__ . '/journal.php';
   $password = (string) ($config['consent_journal_password'] ?? '');
   $journalPath = '/api/consent-journal';
 

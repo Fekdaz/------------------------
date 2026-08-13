@@ -7,67 +7,99 @@ function kozhevnya_rate_limit(array $config, string $ip, int $limit, string $nam
     return true;
   }
 
-  $bucketDir = $config['rate_limit_dir'] . '/' . $namespace;
-  kozhevnya_ensure_dir($bucketDir);
+  try {
+    $bucketDir = $config['rate_limit_dir'] . '/' . $namespace;
+    if (!kozhevnya_ensure_dir($bucketDir)) {
+      return true;
+    }
 
-  $file = $bucketDir . '/' . hash('sha256', $ip) . '.json';
-  $now = (int) round(microtime(true) * 1000);
-  $windowMs = max(1, $windowSeconds) * 1000;
-  $windowStart = $now - $windowMs;
-  $entries = [];
+    $file = $bucketDir . '/' . hash('sha256', $ip) . '.json';
+    $now = (int) round(microtime(true) * 1000);
+    $windowMs = max(1, $windowSeconds) * 1000;
+    $windowStart = $now - $windowMs;
+    $entries = [];
 
-  if (is_file($file)) {
-    $decoded = json_decode((string) file_get_contents($file), true);
-    if (is_array($decoded)) {
-      foreach ($decoded as $stamp) {
-        if (is_int($stamp) && $stamp >= $windowStart) {
-          $entries[] = $stamp;
+    if (is_file($file)) {
+      $decoded = json_decode((string) file_get_contents($file), true);
+      if (is_array($decoded)) {
+        foreach ($decoded as $stamp) {
+          if (is_int($stamp) && $stamp >= $windowStart) {
+            $entries[] = $stamp;
+          }
         }
       }
     }
-  }
 
-  if (count($entries) >= $limit) {
-    return false;
-  }
+    if (count($entries) >= $limit) {
+      return false;
+    }
 
-  $entries[] = $now;
-  file_put_contents($file, json_encode($entries), LOCK_EX);
-  return true;
+    $entries[] = $now;
+    @file_put_contents($file, json_encode($entries), LOCK_EX);
+    return true;
+  } catch (Throwable $e) {
+    return true;
+  }
+}
+
+function kozhevnya_captcha_key(array $config): string
+{
+  return hash(
+    'sha256',
+    'kozhevnya-invisible-captcha|' .
+      (string) ($config['consent_journal_password'] ?? '') .
+      '|' .
+      (string) ($config['smtp_user'] ?? '')
+  );
 }
 
 function kozhevnya_create_captcha(array $config): array
 {
   $secret = trim((string) ($config['yandex_smart_captcha_secret'] ?? ''));
-  if ($secret !== '') {
+  if ($secret !== '' && strpos($secret, 'YOUR_') !== 0) {
     return ['type' => 'smart'];
   }
 
-  kozhevnya_ensure_dir($config['captcha_dir']);
-  $id = bin2hex(random_bytes(16));
   $createdAt = (int) round(microtime(true) * 1000);
-  $payload = [
-    'type' => 'invisible',
-    'createdAt' => $createdAt,
-    'expires' => $createdAt + 600000,
-  ];
-  file_put_contents($config['captcha_dir'] . '/' . $id . '.json', json_encode($payload), LOCK_EX);
-  return ['id' => $id, 'type' => 'invisible'];
+  try {
+    $nonce = bin2hex(random_bytes(8));
+  } catch (Throwable $e) {
+    $nonce = substr(hash('sha256', uniqid((string) mt_rand(), true)), 0, 16);
+  }
+  $body = $createdAt . '.' . $nonce;
+  $mac = hash_hmac('sha256', $body, kozhevnya_captcha_key($config));
+  return ['id' => $body . '.' . $mac, 'type' => 'invisible'];
 }
 
 function kozhevnya_validate_captcha(array $config, array $payload, string $ip): bool
 {
   $secret = trim((string) ($config['yandex_smart_captcha_secret'] ?? ''));
-  if ($secret !== '') {
+  if ($secret !== '' && strpos($secret, 'YOUR_') !== 0) {
     return kozhevnya_validate_smart_captcha($secret, (string) ($payload['captchaToken'] ?? ''), $ip);
   }
 
-  $id = strtolower(preg_replace('/[^a-f0-9]/i', '', (string) ($payload['captchaId'] ?? '')) ?? '');
-  if (strlen($id) !== 32) {
+  $id = (string) ($payload['captchaId'] ?? '');
+  if (preg_match('/^(\d+)\.([a-f0-9]{16})\.([a-f0-9]{64})$/', $id, $match)) {
+    $body = $match[1] . '.' . $match[2];
+    $expected = hash_hmac('sha256', $body, kozhevnya_captcha_key($config));
+    if (!hash_equals($expected, $match[3])) {
+      return false;
+    }
+    $createdAt = (int) $match[1];
+    $now = (int) round(microtime(true) * 1000);
+    if ($now < $createdAt || ($now - $createdAt) > 600000) {
+      return false;
+    }
+    $minDelay = (int) ($config['captcha_invisible_min_ms'] ?? 2000);
+    return ($now - $createdAt) >= $minDelay;
+  }
+
+  $legacyId = strtolower(preg_replace('/[^a-f0-9]/i', '', $id) ?? '');
+  if (strlen($legacyId) !== 32) {
     return false;
   }
 
-  $file = $config['captcha_dir'] . '/' . $id . '.json';
+  $file = $config['captcha_dir'] . '/' . $legacyId . '.json';
   if (!is_file($file)) {
     return false;
   }
@@ -114,9 +146,15 @@ function kozhevnya_validate_smart_captcha(string $secret, string $token, string 
 
 function kozhevnya_log_consent(array $config, array $entry): void
 {
-  kozhevnya_ensure_dir($config['consent_log_dir']);
-  $file = $config['consent_log_dir'] . '/' . gmdate('Y-m') . '.jsonl';
-  file_put_contents($file, json_encode($entry, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n", FILE_APPEND | LOCK_EX);
+  try {
+    if (!kozhevnya_ensure_dir($config['consent_log_dir'])) {
+      return;
+    }
+    $file = $config['consent_log_dir'] . '/' . gmdate('Y-m') . '.jsonl';
+    @file_put_contents($file, json_encode($entry, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n", FILE_APPEND | LOCK_EX);
+  } catch (Throwable $e) {
+    return;
+  }
 }
 
 function kozhevnya_smtp_presets(): array

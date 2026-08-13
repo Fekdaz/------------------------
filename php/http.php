@@ -105,11 +105,15 @@ function kozhevnya_method(): string
   return strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 }
 
-function kozhevnya_ensure_dir(string $dir): void
+function kozhevnya_ensure_dir(string $dir): bool
 {
-  if (!is_dir($dir)) {
-    mkdir($dir, 0700, true);
+  if (is_dir($dir)) {
+    return is_writable($dir);
   }
+  if (@mkdir($dir, 0755, true) || is_dir($dir)) {
+    return is_writable($dir);
+  }
+  return false;
 }
 
 function kozhevnya_is_https(): bool

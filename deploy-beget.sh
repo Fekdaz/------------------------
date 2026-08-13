@@ -64,7 +64,7 @@ RewriteRule ^api/?$ api.php [L,QSA]
 RewriteRule ^api/(.+)$ api.php [L,QSA]
 
 <IfModule mod_headers.c>
-  <FilesMatch "\.(html|php)$">
+  <FilesMatch "\.(html)$">
     Header set Cache-Control "no-cache, must-revalidate"
   </FilesMatch>
   <FilesMatch "\.(css|js)$">
@@ -193,9 +193,9 @@ sync_site() {
 fix_permissions() {
   log "Исправляю права доступа..."
   chmod -R u+rwX,go+rX "$PUBLIC_HTML" 2>/dev/null || true
-  find "$PUBLIC_HTML/php/data" -type d -exec chmod 700 {} \; 2>/dev/null || true
-  find "$PUBLIC_HTML/php/data" -type f -exec chmod 600 {} \; 2>/dev/null || true
-  chmod 600 "$PUBLIC_HTML/php/config.local.php" 2>/dev/null || true
+  find "$PUBLIC_HTML/php/data" -type d -exec chmod 755 {} \; 2>/dev/null || true
+  find "$PUBLIC_HTML/php/data" -type f -exec chmod 644 {} \; 2>/dev/null || true
+  chmod 644 "$PUBLIC_HTML/php/config.local.php" 2>/dev/null || true
 }
 
 repo_needs_sync() {

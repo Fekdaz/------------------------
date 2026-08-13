@@ -27,7 +27,7 @@ function kozhevnya_journal_timestamp(array $entry): string
   return '';
 }
 
-function kozhevnya_journal_entries(array $config, ?string $month, int $limit = 500): array
+function kozhevnya_journal_entries(array $config, $month, int $limit = 500): array
 {
   $dir = $config['consent_log_dir'];
   if (!is_dir($dir)) {
