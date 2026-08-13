@@ -391,6 +391,10 @@ function kozhevnya_send_mail(array $config, string $subject, string $body): void
       if ($fp) {
         fclose($fp);
       }
+      $msg = $error->getMessage();
+      if (stripos($msg, '535') !== false || stripos($msg, '553') !== false || stripos($msg, '550') !== false) {
+        throw $error;
+      }
     }
   }
 
@@ -452,18 +456,18 @@ function kozhevnya_lead_email_body(array $payload, string $company, string $name
 
 function kozhevnya_smtp_error_message(Throwable $error): string
 {
-  $message = $error->getMessage();
-  if (stripos($message, '535') !== false || stripos($message, 'authentication failed') !== false) {
-    return 'Яндекс не принял логин или пароль SMTP. Нужен пароль приложения почты, не обычный пароль.';
+  $message = trim($error->getMessage());
+  if (stripos($message, '535') !== false) {
+    return 'Яндекс не принял пароль SMTP (535). Создайте новый пароль приложения: Яндекс ID → Безопасность → Пароли приложений → Почта. Впишите его в smtp_pass в php/config.local.php на сервере.';
   }
   if (stripos($message, '553') !== false || stripos($message, 'sender address') !== false) {
-    return 'Яндекс отклонил адрес отправителя. Отправка идёт от ящика SMTP, не от noreply@, пока этот адрес не добавлен в ящик.';
+    return 'Яндекс отклонил адрес отправителя. smtp_user и from_email должны быть одним ящиком, с которого идёт SMTP.';
   }
   if (stripos($message, 'подключиться') !== false || stripos($message, 'timeout') !== false || stripos($message, 'timed out') !== false) {
-    return 'Не удалось подключиться к SMTP Яндекса с сервера. Проверьте, что в php/config.local.php указаны smtp_provider=yandex, smtp_user и пароль приложения.';
+    return 'Не удалось подключиться к SMTP Яндекса с сервера. ' . $message;
   }
-  if (preg_match('/SMTP:\s*(.+)$/u', $message, $match)) {
-    return 'Почта не отправлена: ' . $match[1];
+  if ($message !== '') {
+    return 'Не удалось отправить письмо: ' . $message;
   }
   return 'Не удалось отправить письмо. Проверьте SMTP-настройки в php/config.local.php.';
 }
