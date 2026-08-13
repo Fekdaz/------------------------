@@ -1,6 +1,6 @@
 /**
  * Точка входа Passenger (Beget).
- * Сам собирает dist/beget.cjs при необходимости и запускает его.
+ * PhusionPassenger.configure() должен быть вызван ДО require(express).
  */
 const fs = require("fs");
 const path = require("path");
@@ -49,7 +49,17 @@ function ensureBundle() {
 }
 
 try {
-  log("start");
+  process.chdir(root);
+  process.env.KOZHEVNYA_ROOT = root;
+
+  if (typeof PhusionPassenger !== "undefined") {
+    PhusionPassenger.configure({ autoInstall: false });
+    log("PhusionPassenger.configure OK");
+  } else {
+    log("PhusionPassenger is undefined");
+  }
+
+  log(`start cwd=${process.cwd()} node=${process.version}`);
   ensureBundle();
   require(bundle);
   log("bundle loaded");

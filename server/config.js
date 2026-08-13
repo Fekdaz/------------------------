@@ -1,22 +1,29 @@
+import fs from "node:fs";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
 import example from "./config.example.js";
-
-const rootDir = process.cwd();
-const localConfigPath = path.join(rootDir, "server", "config.local.js");
+import { getAppRoot } from "./lib/app-root.js";
 
 let cachedConfig = null;
 
-export async function getConfig() {
+function loadLocalConfig(filePath) {
+  if (!fs.existsSync(filePath)) return {};
+
+  const src = fs.readFileSync(filePath, "utf8").replace(/^\uFEFF/, "").trim();
+  const body = src.replace(/export\s+default\s+/, "").replace(/;\s*$/, "").trim();
+
+  try {
+    return Function(`"use strict"; return (${body});`)();
+  } catch (error) {
+    console.error("config.local.js: не удалось прочитать:", error.message);
+    return {};
+  }
+}
+
+export function getConfig() {
   if (cachedConfig) return cachedConfig;
 
-  let local = {};
-  try {
-    const mod = await import(pathToFileURL(localConfigPath).href);
-    local = mod.default || {};
-  } catch {
-    /* config.local.js optional until first setup */
-  }
+  const rootDir = getAppRoot();
+  const local = loadLocalConfig(path.join(rootDir, "server", "config.local.js"));
 
   cachedConfig = {
     ...example,

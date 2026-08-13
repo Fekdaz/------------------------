@@ -1,18 +1,22 @@
 import express from "express";
 import dns from "node:dns";
 import { getConfig } from "./config.js";
+import { getAppRoot } from "./lib/app-root.js";
 import { registerSecurityMiddleware } from "./lib/security.js";
 import { registerApiRoutes } from "./routes/api.js";
 import { registerConsentJournalRoutes } from "./routes/consent-journal.js";
 import { verifySmtpConnection } from "./lib/smtp-transport.js";
 
-dns.setServers(["1.1.1.1", "8.8.8.8"]);
-dns.setDefaultResultOrder("ipv4first");
+try {
+  dns.setServers(["1.1.1.1", "8.8.8.8"]);
+  dns.setDefaultResultOrder("ipv4first");
+} catch {
+  /* Passenger/Beget may forbid overriding DNS */
+}
 
-const rootDir = process.cwd();
-
-export async function buildApp() {
-  const config = await getConfig();
+export function buildApp() {
+  const config = getConfig();
+  const rootDir = getAppRoot();
   const app = express();
 
   registerSecurityMiddleware(app, config);
@@ -72,7 +76,7 @@ export async function buildApp() {
 }
 
 export async function verifySmtpOnStart() {
-  const config = await getConfig();
+  const config = getConfig();
   if (!config.smtp_verify_on_start) return;
   try {
     await verifySmtpConnection(config);

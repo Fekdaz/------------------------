@@ -1,21 +1,20 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Кожевня — автодеплой на Beget (один файл для загрузки на сервер)
+# Кожевня — автодеплой на Beget (tennerg.ru)
 #
 # Использование:
-#   1) Отредактируйте GIT_REPO_URL ниже (или передайте через переменную окружения)
-#   2) Загрузите этот файл на сервер, например в ~/tennerg.ru/
-#   3) Запустите:  bash deploy-beget.sh
+#   1) Загрузите этот файл на сервер, например в ~/tennerg.ru/
+#   2) Запустите:  bash deploy-beget.sh
 #
 # Для приватного репозитория:
 #   export GITHUB_TOKEN="ghp_..."
-#   export GIT_REPO_URL="https://${GITHUB_TOKEN}@github.com/USER/REPO.git"
+#   export GIT_REPO_URL="https://${GITHUB_TOKEN}@github.com/Fekdaz/------------------------.git"
 #   bash deploy-beget.sh
 # =============================================================================
 
-# --- НАСТРОЙКИ (измените под себя) -------------------------------------------
+# --- НАСТРОЙКИ ---------------------------------------------------------------
 
-GIT_REPO_URL="${GIT_REPO_URL:-https://github.com/YOUR_USER/kozhevnya-landing.git}"
+GIT_REPO_URL="${GIT_REPO_URL:-https://github.com/Fekdaz/------------------------.git}"
 GIT_BRANCH="${GIT_BRANCH:-main}"
 
 SITE_SLUG="${SITE_SLUG:-tennerg.ru}"        # папка сайта на Beget
@@ -26,7 +25,7 @@ MAX_FIX_ATTEMPTS="${MAX_FIX_ATTEMPTS:-4}"
 
 # --- служебные пути (обычно менять не нужно) ---------------------------------
 
-BEGET_USER="$(whoami)"
+BEGET_USER="${BEGET_USER:-$(whoami)}"
 HOME_DIR="${HOME:-/home/${BEGET_USER:0:1}/$BEGET_USER}"
 SITE_ROOT="$HOME_DIR/$SITE_SLUG"
 APP_ROOT="$SITE_ROOT/$APP_DIR_NAME"
@@ -67,12 +66,13 @@ backup_file() {
 
 write_htaccess() {
   mkdir -p "$PUBLIC_HTML"
+  # Только директивы из инструкции Beget. Лишние (PassengerLogLevel,
+  # PassengerFriendlyErrorPages) дают Apache 500: "not allowed here".
   cat >"$PUBLIC_HTML/.htaccess" <<EOF
 PassengerNodejs $NODE_BIN
 PassengerAppRoot $APP_ROOT
 PassengerAppType node
 PassengerStartupFile passenger.cjs
-PassengerFriendlyErrorPages off
 EOF
   log "Обновлён $PUBLIC_HTML/.htaccess"
 }
@@ -169,10 +169,24 @@ build_production_bundle() {
   [ -f "$APP_ROOT/dist/beget.cjs" ] || fail "Не создан dist/beget.cjs"
 }
 
+smoke_test_bundle() {
+  log "Проверяю бандл и зависимости..."
+  cd "$APP_ROOT"
+  local node_cmd="$NODE_BIN"
+  [ -x "$node_cmd" ] || node_cmd="node"
+
+  "$node_cmd" --check "$APP_ROOT/dist/beget.cjs" || fail "dist/beget.cjs: синтаксическая ошибка"
+
+  NODE_PATH="$APP_ROOT/node_modules" "$node_cmd" -e "require('express'); require('nodemailer'); console.log('deps ok')" \
+    || fail "Не загружаются express/nodemailer. Выполните npm ci в $APP_ROOT"
+}
+
 restart_passenger() {
   mkdir -p "$APP_ROOT/tmp"
+  chmod -R u+rwX,go+rX "$APP_ROOT/tmp" 2>/dev/null || true
   touch "$APP_ROOT/tmp/restart.txt"
   log "Passenger перезапущен (tmp/restart.txt)"
+  sleep 6
 }
 
 http_status() {
@@ -182,9 +196,15 @@ http_status() {
 show_diagnostics() {
   log "=== Диагностика ==="
   log "HTTP: $(http_status || echo 'недоступен')"
-  [ -f "$APP_ROOT/tmp/passenger-debug.log" ] && tail -30 "$APP_ROOT/tmp/passenger-debug.log" || true
-  [ -f "$SITE_ROOT/${SITE_DOMAIN}.error.log" ] && tail -30 "$SITE_ROOT/${SITE_DOMAIN}.error.log" || true
-  log "Проверьте в панели Beget: общий доступ к ~/.local (обязательно)"
+  log "--- .htaccess ---"
+  [ -f "$PUBLIC_HTML/.htaccess" ] && cat "$PUBLIC_HTML/.htaccess" || log "нет $PUBLIC_HTML/.htaccess"
+  log "--- passenger-debug.log (хвост) ---"
+  [ -f "$APP_ROOT/tmp/passenger-debug.log" ] && tail -40 "$APP_ROOT/tmp/passenger-debug.log" || log "нет passenger-debug.log — Node, скорее всего, не стартовал"
+  log "--- error.log (not allowed / passenger) ---"
+  if [ -f "$SITE_ROOT/${SITE_DOMAIN}.error.log" ]; then
+    grep -E "not allowed|Passenger|passenger" "$SITE_ROOT/${SITE_DOMAIN}.error.log" | tail -20 || tail -20 "$SITE_ROOT/${SITE_DOMAIN}.error.log"
+  fi
+  log "Проверьте в панели Beget: общий доступ к ~/.local (чтение и запись, включая вложенные)"
   log "Лог деплоя: $DEPLOY_LOG"
 }
 
@@ -214,6 +234,7 @@ deploy_once() {
   fix_permissions
   install_dependencies
   build_production_bundle
+  smoke_test_bundle
   restart_passenger
 }
 
