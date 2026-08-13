@@ -12,7 +12,7 @@ window.KOZHEVNYA_CONFIG = {
   /** POST JSON на /api/send-lead */
   leadWebhookUrl: "/api/send-lead",
   /** ID счётчика Яндекс.Метрики — загружается только после согласия на аналитику */
-  yandexMetrikaCounterId: null,
+  yandexMetrikaCounterId: 111570108,
   /** Цели в интерфейсе Метрики (Настройки → Цели) */
   yandexMetrikaGoals: {
     leadFormOpen: "lead_form_open",

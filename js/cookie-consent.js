@@ -116,7 +116,7 @@
     }
 
     bannerEl.innerHTML =
-      '<div class="cookie-banner__inner">' +
+      '<div class="cookie-banner__inner cookie-banner__inner--settings">' +
       '<div class="cookie-banner__settings-head">' +
       '<p class="cookie-banner__settings-title">Настройки cookie</p>' +
       '<button type="button" class="cookie-banner__btn cookie-banner__btn--ghost" data-action="close-settings">Назад</button>' +
@@ -125,6 +125,7 @@
       "Обязательные cookie нельзя отключить: без них сайт не сможет сохранить ваш выбор. " +
       "Остальные категории включаются только по вашему решению." +
       "</p>" +
+      '<div class="cookie-banner__settings-toolbar">' +
       '<div class="cookie-banner__settings">' +
       '<label class="cookie-banner__option"><span>Обязательные</span><input type="checkbox" checked disabled aria-label="Обязательные cookie всегда включены" /></label>' +
       '<label class="cookie-banner__option"><span>Аналитика</span><input type="checkbox" data-field="analytics"' +
@@ -137,7 +138,7 @@
       '<div class="cookie-banner__actions">' +
       '<button type="button" class="cookie-banner__btn cookie-banner__btn--ghost" data-action="essential-only">Только необходимые</button>' +
       '<button type="button" class="cookie-banner__btn cookie-banner__btn--primary" data-action="save-settings">Сохранить выбор</button>' +
-      "</div></div>";
+      "</div></div></div>";
   }
 
   function ensureBanner() {
