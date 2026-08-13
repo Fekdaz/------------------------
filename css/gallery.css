@@ -47,10 +47,12 @@ html:has(.gallery-page) {
   flex: 0 1 auto;
   min-width: 0;
   margin: 0 0 0 auto;
+  font-family: var(--font);
   font-size: clamp(20px, 2.2vw, 32px);
-  font-weight: 700;
-  line-height: 1.15;
+  font-weight: 400;
+  line-height: 1.05;
   letter-spacing: -0.02em;
+  text-transform: uppercase;
   text-align: right;
 }
 
