@@ -209,6 +209,10 @@
         encodeURIComponent(String(lon) + "," + String(lat)) +
         "&z=16&l=map&pt=" +
         encodeURIComponent(String(lon) + "," + String(lat) + ",pm2rdm");
+      iframe.style.position = "absolute";
+      iframe.style.inset = "0";
+      iframe.style.width = "100%";
+      iframe.style.height = "100%";
       mapNode.appendChild(iframe);
       state.mapIframe = iframe;
 
@@ -234,11 +238,13 @@
             {
               suppressMapOpenBlock: true,
               yandexMapDisablePoiInteractivity: true,
+              autoFitToViewport: "always",
             }
           );
 
           state.mapInstance = map;
           map.behaviors.enable(["drag", "scrollZoom", "multiTouch", "dblClickZoom"]);
+          fitMapToViewport();
 
           var placemark = new window.ymaps.Placemark(
             coords,
@@ -266,6 +272,14 @@
     function startMap() {
       if (state.started) return;
       state.started = true;
+
+      if (typeof ResizeObserver === "function") {
+        var observer = new ResizeObserver(function () {
+          fitMapToViewport();
+        });
+        observer.observe(mapNode);
+        if (mapNode.parentElement) observer.observe(mapNode.parentElement);
+      }
 
       if (apiKey) {
         renderInteractiveMap();
@@ -320,6 +334,10 @@
   };
 
   window.addEventListener("nearby-tablet-resize", function () {
+    window.KOZHEVNYA_NEARBY_MAP.resize();
+  });
+
+  window.addEventListener("resize", function () {
     window.KOZHEVNYA_NEARBY_MAP.resize();
   });
 

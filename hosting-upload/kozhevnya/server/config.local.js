@@ -8,7 +8,7 @@ export default {
   smtp_pass: "dhozwfdahmleblfi",
 
   from_email: "kozhevnya.ru@yandex.ru",
-  from_name: "Сайт Kozhevnya",
+  from_name: "Сайт Кожевня",
   to_email: "info@kozhevnya.ru",
 
   smtp_connection_timeout_ms: 15000,

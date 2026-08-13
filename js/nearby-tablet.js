@@ -178,6 +178,10 @@
     };
   }
 
+  function notifyMapResize() {
+    window.dispatchEvent(new Event("nearby-tablet-resize"));
+  }
+
   function pinTabletAtRect(tablet, rect, rotate) {
     var rectCenter = center(rect);
 
@@ -188,6 +192,7 @@
     tablet.style.maxWidth = rect.width + "px";
     tablet.style.margin = "0";
     tablet.style.transform = "translate(-50%, -50%) rotate(" + rotate + ")";
+    notifyMapResize();
   }
 
   function clearFlipStyles(tablet) {
@@ -233,6 +238,7 @@
       restoreStageTablet();
       setTabletVisible(stageTablet, false);
       setTabletVisible(expandedTablet, true);
+      notifyMapResize();
       return;
     }
 
@@ -243,6 +249,7 @@
     backdrop.setAttribute("aria-hidden", "true");
     setToggleState(false);
     unlockScroll();
+    notifyMapResize();
   }
 
   function scheduleFlipFinish(toExpanded) {
@@ -360,4 +367,6 @@
       collapse();
     }
   });
+
+  window.addEventListener("resize", notifyMapResize);
 })();

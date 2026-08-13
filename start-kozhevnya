@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Запуск / перезапуск проекта «Кожевня».
+# На Beget (из домашней папки):  ~/start-kozhevnya
+# Локально (из корня репозитория):  bash start-kozhevnya   или   npm start
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+HOME_DIR="${HOME:-$SCRIPT_DIR}"
+APP_ROOT="${KOZHEVNYA_APP_ROOT:-$HOME_DIR/tennerg.ru/kozhevnya}"
+
+if [ ! -d "$APP_ROOT" ] && [ -f "$SCRIPT_DIR/deploy-beget.sh" ]; then
+  APP_ROOT="$SCRIPT_DIR"
+fi
+
+if [ -f "$APP_ROOT/deploy-beget.sh" ] && [ -d "${HOME_DIR}/tennerg.ru/public_html" ]; then
+  echo "Кожевня: выкладка на Beget ($APP_ROOT)"
+  cd "$APP_ROOT"
+  FORCE_DEPLOY=1 exec bash "$APP_ROOT/deploy-beget.sh"
+fi
+
+if [ -f "$APP_ROOT/package.json" ]; then
+  echo "Кожевня: локальный сервер (npm start)"
+  cd "$APP_ROOT"
+  exec npm start
+fi
+
+echo "Не найден проект Кожевня. Ожидался $APP_ROOT" >&2
+exit 1

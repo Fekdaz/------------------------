@@ -7,7 +7,11 @@
 #
 # Скрипт сам ставит cron: каждые 5 минут проверяет GitHub и выкладывает
 # сайт, только если в репозитории есть новые коммиты.
-# Принудительно:  FORCE_DEPLOY=1 bash deploy-beget.sh
+#
+# Перезапуск с домашней папки аккаунта Beget:
+#   ~/start-kozhevnya
+# Принудительно из папки проекта:
+#   FORCE_DEPLOY=1 bash deploy-beget.sh
 # =============================================================================
 
 GIT_REPO_URL="${GIT_REPO_URL:-https://github.com/Fekdaz/------------------------.git}"
@@ -204,6 +208,22 @@ clone_or_update_repo() {
   fi
 }
 
+install_start_command() {
+  local src="$APP_ROOT/start-kozhevnya"
+  [ -f "$src" ] || return 0
+
+  chmod +x "$src" 2>/dev/null || true
+  cp -f "$src" "$HOME_DIR/start-kozhevnya"
+  chmod +x "$HOME_DIR/start-kozhevnya" 2>/dev/null || true
+
+  if [ -d "$HOME_DIR/.local/bin" ]; then
+    cp -f "$src" "$HOME_DIR/.local/bin/start-kozhevnya"
+    chmod +x "$HOME_DIR/.local/bin/start-kozhevnya" 2>/dev/null || true
+  fi
+
+  log "Команда запуска: ~/start-kozhevnya"
+}
+
 install_auto_update_cron() {
   command -v crontab >/dev/null 2>&1 || {
     warn "crontab недоступен — в панели Beget добавьте cron каждые 5 минут: bash $APP_ROOT/deploy-beget.sh"
@@ -264,6 +284,7 @@ main() {
   need_cmd git
   need_cmd curl
   clone_or_update_repo
+  install_start_command
   install_auto_update_cron
 
   if ! repo_needs_sync; then
