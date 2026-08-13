@@ -62,8 +62,40 @@ RewriteBase /
 RewriteRule ^php/ - [F,L]
 RewriteRule ^api/?$ api.php [L,QSA]
 RewriteRule ^api/(.+)$ api.php [L,QSA]
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|php)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "\.(css|js)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType text/javascript "access plus 1 year"
+</IfModule>
 EOF
   log "Обновлён $PUBLIC_HTML/.htaccess"
+}
+
+bust_asset_cache() {
+  local ver
+  ver="$(git -C "$APP_ROOT" rev-parse --short HEAD 2>/dev/null || date +%Y%m%d%H%M%S)"
+  log "Версия CSS/JS для сброса кэша: $ver"
+
+  local file
+  for file in "$PUBLIC_HTML"/*.html; do
+    [ -f "$file" ] || continue
+    sed -i -E \
+      -e "s#(href=\"css/[^\"?]+\\.css)(\\?v=[^\"]*)?\"#\\1?v=${ver}\"#g" \
+      -e "s#(src=\"js/[^\"?]+\\.js)(\\?v=[^\"]*)?\"#\\1?v=${ver}\"#g" \
+      "$file"
+  done
 }
 
 ensure_php_config() {
@@ -155,6 +187,7 @@ sync_site() {
   mkdir -p "$PUBLIC_HTML/php/data/consent-log" "$PUBLIC_HTML/php/data/captcha" "$PUBLIC_HTML/php/data/rate-limit"
   printf '%s\n' 'Require all denied' >"$PUBLIC_HTML/php/.htaccess"
   printf '%s\n' 'Require all denied' >"$PUBLIC_HTML/php/data/.htaccess"
+  bust_asset_cache
 }
 
 fix_permissions() {
