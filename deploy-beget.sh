@@ -4,6 +4,10 @@
 #
 #   cd ~/tennerg.ru/kozhevnya
 #   bash deploy-beget.sh
+#
+# Скрипт сам ставит cron: каждые 5 минут проверяет GitHub и выкладывает
+# сайт, только если в репозитории есть новые коммиты.
+# Принудительно:  FORCE_DEPLOY=1 bash deploy-beget.sh
 # =============================================================================
 
 GIT_REPO_URL="${GIT_REPO_URL:-https://github.com/Fekdaz/------------------------.git}"
@@ -157,16 +161,32 @@ fix_permissions() {
   chmod 600 "$PUBLIC_HTML/php/config.local.php" 2>/dev/null || true
 }
 
+repo_needs_sync() {
+  [ "${FORCE_DEPLOY:-0}" = "1" ] && return 0
+  [ ! -f "$PUBLIC_HTML/index.html" ] && return 0
+  [ ! -f "$PUBLIC_HTML/api.php" ] && return 0
+  [ "$REPO_CHANGED" = "1" ]
+}
+
 clone_or_update_repo() {
   mkdir -p "$APP_ROOT" "$PUBLIC_HTML" "$BACKUP_DIR"
   backup_file "$APP_ROOT/server/config.local.js"
   backup_file "$APP_ROOT/js/legal-config.local.js"
+  REPO_CHANGED=1
 
   if [ -d "$APP_ROOT/.git" ]; then
-    log "Обновляю репозиторий..."
+    local before after
+    before="$(git -C "$APP_ROOT" rev-parse HEAD 2>/dev/null || echo none)"
     git -C "$APP_ROOT" remote set-url origin "$GIT_REPO_URL" 2>/dev/null || true
     git -C "$APP_ROOT" fetch origin "$GIT_BRANCH"
     git -C "$APP_ROOT" reset --hard "origin/$GIT_BRANCH"
+    after="$(git -C "$APP_ROOT" rev-parse HEAD 2>/dev/null || echo none)"
+    if [ "$before" = "$after" ]; then
+      REPO_CHANGED=0
+      log "Репозиторий уже актуален ($after)"
+    else
+      log "Репозиторий обновлён: ${before:0:7} → ${after:0:7}"
+    fi
   else
     log "Клонирую репозиторий..."
     if [ -d "$APP_ROOT" ] && [ "$(ls -A "$APP_ROOT" 2>/dev/null)" ]; then
@@ -182,6 +202,24 @@ clone_or_update_repo() {
     cp -f "$latest_js_config" "$APP_ROOT/server/config.local.js"
     log "Восстановлен server/config.local.js"
   fi
+}
+
+install_auto_update_cron() {
+  command -v crontab >/dev/null 2>&1 || {
+    warn "crontab недоступен — в панели Beget добавьте cron каждые 5 минут: bash $APP_ROOT/deploy-beget.sh"
+    return 0
+  }
+
+  local cron_line="*/5 * * * * /bin/bash $APP_ROOT/deploy-beget.sh"
+  local current
+  current="$(crontab -l 2>/dev/null || true)"
+  if echo "$current" | grep -F "$APP_ROOT/deploy-beget.sh" >/dev/null 2>&1; then
+    log "Автообновление по cron уже включено (каждые 5 минут)"
+    return 0
+  fi
+
+  printf '%s\n' "$current" "$cron_line" | sed '/^$/d' | crontab -
+  log "Включён cron: каждые 5 минут проверять GitHub и выкладывать при обновлениях"
 }
 
 http_status() {
@@ -201,7 +239,19 @@ show_diagnostics() {
   log "Лог деплоя: $DEPLOY_LOG"
 }
 
+acquire_lock() {
+  local lock="$HOME_DIR/.kozhevnya-deploy.lock"
+  exec 9>"$lock"
+  if command -v flock >/dev/null 2>&1; then
+    flock -n 9 || {
+      log "Деплой уже выполняется — пропуск"
+      exit 0
+    }
+  fi
+}
+
 main() {
+  acquire_lock
   log "===== Деплой Кожевня (PHP/HTML) на Beget ====="
   log "Пользователь: $BEGET_USER"
   log "Репозиторий: $GIT_REPO_URL ($GIT_BRANCH)"
@@ -214,6 +264,13 @@ main() {
   need_cmd git
   need_cmd curl
   clone_or_update_repo
+  install_auto_update_cron
+
+  if ! repo_needs_sync; then
+    log "Обновлений нет — сайт не перекладываю"
+    exit 0
+  fi
+
   write_htaccess
   sync_site
   fix_permissions
