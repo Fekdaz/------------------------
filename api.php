@@ -1,30 +1,15 @@
 <?php
-declare(strict_types=1);
-
-function kozhevnya_fatal_json(Throwable $error): void
-{
-  if (!headers_sent()) {
-    http_response_code(500);
-    header('Content-Type: application/json; charset=utf-8');
-  }
-  $logDir = __DIR__ . '/php/data';
-  if (is_dir($logDir) && is_writable($logDir)) {
-    @file_put_contents(
-      $logDir . '/php-error.log',
-      date('c') . ' ' . $error->getMessage() . ' @ ' . $error->getFile() . ':' . $error->getLine() . "\n",
-      FILE_APPEND | LOCK_EX
-    );
-  }
-  echo json_encode([
-    'ok' => false,
-    'error' => 'Сервис временно недоступен',
-    'debug' => get_class($error) . ' ' . basename($error->getFile()) . ':' . $error->getLine(),
-  ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+/**
+ * Точка входа API. Этот файл должен разбираться даже на PHP 5.6,
+ * чтобы отдать понятную ошибку, если в панели Beget не включён PHP 8.
+ */
+if (!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 70400) {
+  header('Content-Type: application/json; charset=utf-8');
+  header('X-Content-Type-Options: nosniff');
+  http_response_code(503);
+  echo '{"ok":false,"error":"На хостинге PHP ' . PHP_VERSION . '. В панели Beget для tennerg.ru включите PHP 8.2."}';
+  exit;
 }
 
-try {
-  require __DIR__ . '/php/bootstrap.php';
-  kozhevnya_dispatch($config);
-} catch (Throwable $error) {
-  kozhevnya_fatal_json($error);
-}
+require __DIR__ . '/php/bootstrap.php';
+require __DIR__ . '/php/run.php';

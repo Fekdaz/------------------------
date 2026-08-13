@@ -271,7 +271,7 @@
           })
           .then(function (data) {
             if (!response.ok || !data || !data.ok) {
-              throw new Error("captcha");
+              throw new Error((data && data.error) || "captcha");
             }
 
             if (data.type === "smart") {
@@ -286,11 +286,12 @@
             return true;
           });
       })
-      .catch(function () {
-        setError(
-          "lead-error-captcha",
-          "Не загрузилась проверка. Закройте форму и откройте снова.",
-        );
+      .catch(function (error) {
+        var message =
+          error && error.message && error.message !== "captcha"
+            ? String(error.message)
+            : "Не загрузилась проверка. Закройте форму и откройте снова.";
+        setError("lead-error-captcha", message);
         return false;
       });
   }

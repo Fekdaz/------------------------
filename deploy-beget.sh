@@ -56,6 +56,10 @@ write_htaccess() {
   cat >"$PUBLIC_HTML/.htaccess" <<'EOF'
 DirectoryIndex index.html
 
+<IfModule mime_module>
+  AddHandler application/x-httpd-php82 .php
+</IfModule>
+
 RewriteEngine On
 RewriteBase /
 
