@@ -103,10 +103,33 @@ bust_asset_cache() {
   done
 }
 
+php_config_is_placeholder() {
+  local f="$1"
+  [ -f "$f" ] || return 0
+  grep -Eq 'ВАШ_EMAIL|ВАШ_SMTP|YOUR_|ЗАДАЙТЕ_ПАРОЛЬ' "$f"
+}
+
 ensure_php_config() {
   mkdir -p "$PUBLIC_HTML/php"
-  if [ -f "$PUBLIC_HTML/php/config.local.php" ]; then
+  local dest="$PUBLIC_HTML/php/config.local.php"
+
+  if [ -f "$dest" ] && ! php_config_is_placeholder "$dest"; then
     log "Оставляю существующий php/config.local.php"
+    return 0
+  fi
+
+  local bak
+  for bak in $(ls -t "$BACKUP_DIR"/config.local.php.*.bak 2>/dev/null); do
+    if [ -f "$bak" ] && ! php_config_is_placeholder "$bak"; then
+      cp -f "$bak" "$dest"
+      log "Восстановлен php/config.local.php из бэкапа $(basename "$bak")"
+      return 0
+    fi
+  done
+
+  if [ -f "$APP_ROOT/php/config.local.php" ] && ! php_config_is_placeholder "$APP_ROOT/php/config.local.php"; then
+    cp -f "$APP_ROOT/php/config.local.php" "$dest"
+    log "Скопирован php/config.local.php из репозитория на сервере"
     return 0
   fi
 
@@ -120,15 +143,17 @@ ensure_php_config() {
     if [ -n "$node_cmd" ] && [ -f "$APP_ROOT/scripts/export-php-config.cjs" ]; then
       log "Создаю php/config.local.php из server/config.local.js"
       (cd "$APP_ROOT" && "$node_cmd" scripts/export-php-config.cjs) || true
-      if [ -f "$APP_ROOT/php/config.local.php" ]; then
-        cp -f "$APP_ROOT/php/config.local.php" "$PUBLIC_HTML/php/config.local.php"
+      if [ -f "$APP_ROOT/php/config.local.php" ] && ! php_config_is_placeholder "$APP_ROOT/php/config.local.php"; then
+        cp -f "$APP_ROOT/php/config.local.php" "$dest"
         return 0
       fi
     fi
   fi
 
-  cp -f "$APP_ROOT/php/config.example.php" "$PUBLIC_HTML/php/config.local.php"
-  warn "Создан php/config.local.php из примера — заполните SMTP и пароль журнала!"
+  if [ ! -f "$dest" ]; then
+    cp -f "$APP_ROOT/php/config.example.php" "$dest"
+  fi
+  warn "php/config.local.php — шаблон. Заполните smtp_user и smtp_pass: $dest"
 }
 
 sync_site() {
@@ -171,8 +196,14 @@ sync_site() {
     fi
   done
 
-  local latest_php_config
-  latest_php_config="$(ls -t "$BACKUP_DIR"/config.local.php.*.bak 2>/dev/null | head -1 || true)"
+  local latest_php_config=""
+  local bak
+  for bak in $(ls -t "$BACKUP_DIR"/config.local.php.*.bak 2>/dev/null); do
+    if [ -f "$bak" ] && ! php_config_is_placeholder "$bak"; then
+      latest_php_config="$bak"
+      break
+    fi
+  done
   if [ -n "$latest_php_config" ]; then
     cp -f "$latest_php_config" "$PUBLIC_HTML/php/config.local.php"
     log "Восстановлен php/config.local.php"

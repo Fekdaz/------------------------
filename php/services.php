@@ -44,15 +44,22 @@ function kozhevnya_rate_limit(array $config, string $ip, int $limit, string $nam
   }
 }
 
+function kozhevnya_captcha_keys(array $config): array
+{
+  $password = (string) ($config['consent_journal_password'] ?? '');
+  $smtpUser = (string) ($config['smtp_user'] ?? '');
+  $keys = [
+    hash('sha256', 'kozhevnya-invisible-captcha-v2'),
+    hash('sha256', 'kozhevnya-invisible-captcha|' . $password . '|' . $smtpUser),
+    hash('sha256', 'kozhevnya-invisible-captcha|ЗАДАЙТЕ_ПАРОЛЬ|ВАШ_EMAIL@example.com'),
+    hash('sha256', 'kozhevnya-invisible-captcha||'),
+  ];
+  return array_values(array_unique($keys));
+}
+
 function kozhevnya_captcha_key(array $config): string
 {
-  return hash(
-    'sha256',
-    'kozhevnya-invisible-captcha|' .
-      (string) ($config['consent_journal_password'] ?? '') .
-      '|' .
-      (string) ($config['smtp_user'] ?? '')
-  );
+  return kozhevnya_captcha_keys($config)[0];
 }
 
 function kozhevnya_create_captcha(array $config): array
@@ -83,17 +90,22 @@ function kozhevnya_validate_captcha(array $config, array $payload, string $ip): 
   $id = (string) ($payload['captchaId'] ?? '');
   if (preg_match('/^(\d+)\.([a-f0-9]{16})\.([a-f0-9]{64})$/', $id, $match)) {
     $body = $match[1] . '.' . $match[2];
-    $expected = hash_hmac('sha256', $body, kozhevnya_captcha_key($config));
-    if (!hash_equals($expected, $match[3])) {
+    $macOk = false;
+    foreach (kozhevnya_captcha_keys($config) as $key) {
+      if (hash_equals(hash_hmac('sha256', $body, $key), $match[3])) {
+        $macOk = true;
+        break;
+      }
+    }
+    if (!$macOk) {
       return false;
     }
     $createdAt = (int) $match[1];
     $now = (int) round(microtime(true) * 1000);
-    if ($now < $createdAt || ($now - $createdAt) > 600000) {
+    if ($now + 5000 < $createdAt || ($now - $createdAt) > 600000) {
       return false;
     }
-    $minDelay = (int) ($config['captcha_invisible_min_ms'] ?? 2000);
-    return ($now - $createdAt) >= $minDelay;
+    return true;
   }
 
   $legacyId = strtolower(preg_replace('/[^a-f0-9]/i', '', $id) ?? '');
