@@ -579,7 +579,7 @@
         setError("lead-error-phone", "Укажите телефон");
         hasError = true;
       } else if (!isPhoneComplete(values.phone)) {
-        setError("lead-error-phone", "Введите номер полностью: +7 (XXX) XXX-XX-XX");
+        setError("lead-error-phone", "Введите номер полностью");
         hasError = true;
       }
 
@@ -589,7 +589,7 @@
       }
 
       if (!(personalConsent instanceof HTMLInputElement) || !personalConsent.checked) {
-        setError("lead-error-consent", "Необходимо согласие на обработку персональных данных");
+        setError("lead-error-consent", "Нужно согласие на обработку персональных данных");
         hasError = true;
       }
 

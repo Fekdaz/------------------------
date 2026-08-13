@@ -4193,9 +4193,8 @@ body.lead-modal-open {
   width: min(76%, calc(100% - 48px));
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .lead-modal__form-wrap {
@@ -4203,6 +4202,8 @@ body.lead-modal-open {
   flex-direction: column;
   min-height: 0;
   flex: 1 1 auto;
+  height: 100%;
+  overflow: hidden;
 }
 
 .lead-modal__head {
@@ -4228,9 +4229,12 @@ body.lead-modal-open {
 }
 
 .lead-modal__form {
-  display: grid;
-  gap: clamp(8px, 1vh, 10px);
-  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(4px, 0.7vh, 8px);
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .lead-modal__form-row {
@@ -4241,8 +4245,9 @@ body.lead-modal-open {
 
 .lead-modal__field {
   display: grid;
-  gap: 4px;
+  gap: 2px;
   min-width: 0;
+  flex-shrink: 0;
 }
 
 .lead-modal__label {
@@ -4281,14 +4286,28 @@ body.lead-modal-open {
 }
 
 .lead-modal__textarea {
-  min-height: clamp(64px, 8vh, 80px);
-  resize: vertical;
+  min-height: 32px;
+  height: 100%;
+  resize: none;
+}
+
+.lead-modal__field:has(.lead-modal__textarea) {
+  flex: 1 1 0;
+  flex-shrink: 1;
+  min-height: 32px;
+  display: flex;
+  flex-direction: column;
+}
+
+.lead-modal__field:has(.lead-modal__textarea) .lead-modal__textarea {
+  flex: 1 1 auto;
 }
 
 .lead-modal__consents {
   display: grid;
-  gap: clamp(8px, 1vh, 10px);
+  gap: clamp(4px, 0.6vh, 8px);
   margin-top: clamp(2px, 0.4vh, 4px);
+  flex-shrink: 0;
 }
 
 .lead-modal__captcha-hidden {
@@ -4338,9 +4357,12 @@ body.lead-modal-open {
 
 .lead-modal__error {
   margin: 0;
-  font-size: clamp(11px, 0.78vw, 12px);
-  line-height: 1.25;
+  max-height: 2.4em;
+  overflow: hidden;
+  font-size: clamp(10px, 0.72vw, 12px);
+  line-height: 1.2;
   color: #b42318;
+  flex-shrink: 0;
 }
 
 .lead-modal__error:empty {
@@ -4362,7 +4384,7 @@ body.lead-modal-open {
 .lead-modal__submit {
   display: block;
   width: min(100%, 280px);
-  margin: clamp(8px, 1vh, 12px) auto 0;
+  margin: clamp(6px, 0.8vh, 10px) auto 0;
   padding: 0;
   border: 0;
   background: transparent;
@@ -4509,8 +4531,7 @@ body.lead-modal-open {
     width: min(76%, calc(100% - 40px));
     margin: 0;
     padding: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden;
     box-sizing: border-box;
     max-height: none;
   }
@@ -4535,7 +4556,7 @@ body.lead-modal-open {
   }
 
   .lead-modal__form {
-    gap: clamp(8px, 1.6vh, 10px);
+    gap: clamp(4px, 1vh, 8px);
   }
 
   .lead-modal__captcha {
@@ -4578,13 +4599,8 @@ body.lead-modal-open {
   }
 
   .lead-modal__error {
-    min-height: 12px;
-    font-size: 11px;
-  }
-
-  #lead-error-phone,
-  #lead-error-consent {
-    min-height: 12px;
+    font-size: 10px;
+    line-height: 1.2;
   }
 
   .lead-modal__submit {
@@ -4613,7 +4629,7 @@ body.lead-modal-open {
   }
 
   .lead-modal__textarea {
-    min-height: 40px;
+    min-height: 28px;
   }
 }
 

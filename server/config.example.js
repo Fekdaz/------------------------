@@ -14,8 +14,8 @@ export default {
   smtp_provider: "brevo",
 
   /** Brevo: smtp_user = email регистрации, smtp_pass = SMTP-ключ из SMTP & API → SMTP */
-  smtp_user: "ВАШ_EMAIL@example.com",
-  smtp_pass: "ВАШ_SMTP_КЛЮЧ",
+  smtp_user: "kozhevnya.ru@yandex.ru",
+  smtp_pass: "agitkxhdhznisjab",
 
   from_email: "noreply@kozhevnya.ru",
   from_name: "Сайт Kozhevnya",
