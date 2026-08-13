@@ -1,0 +1,14 @@
+{
+  "name": "kozhevnya-landing",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "test:smtp": "node server/scripts/test-smtp.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "nodemailer": "^6.10.0"
+  }
+}

@@ -1,0 +1,70 @@
+================================================================================
+  КОЖЕВНЯ — РАЗВЁРТЫВАНИЕ НА BEGET (tennerg.ru)
+  Автоматическая сборка запуска для Passenger
+================================================================================
+
+ЧТО ИЗМЕНИЛОСЬ
+--------------
+При npm ci автоматически собирается dist/beget.cjs — один CommonJS-файл
+для Passenger (без проблем ESM/async).
+
+passenger.cjs сам:
+  • проверяет наличие dist/beget.cjs
+  • при необходимости запускает сборку
+  • пишет лог в tmp/passenger-debug.log
+
+
+СТРУКТУРА ПАПКИ hosting-upload
+-------------------------------
+  kozhevnya/       → загрузить в ~/tennerg.ru/kozhevnya/
+  public_html/     → .htaccess в ~/tennerg.ru/public_html/
+
+
+ШАГ 1. ЗАГРУЗКА
+---------------
+Замените на сервере всё содержимое ~/tennerg.ru/kozhevnya/
+и файл ~/tennerg.ru/public_html/.htaccess
+
+
+ШАГ 2. SSH (один раз после загрузки)
+------------------------------------
+  cd ~/tennerg.ru/kozhevnya
+  npm ci
+  chmod -R u+rwX,go+rX .
+  touch tmp/restart.txt
+  curl -I http://tennerg.ru
+
+Ожидается: HTTP/1.1 200 OK
+
+
+ШАГ 3. ОБЯЗАТЕЛЬНО В ПАНЕЛИ BEGET
+---------------------------------
+Файловый менеджер → папка .local (в корне аккаунта)
+→ Инструменты → Настроить общий доступ
+→ Чтение и запись + Включая вложенные папки → Открыть доступ
+
+Без этого Passenger не запустит Node!
+
+
+ШАГ 4. SSL (для https)
+----------------------
+Сайты → tennerg.ru → SSL → Let's Encrypt
+
+
+ДИАГНОСТИКА
+-----------
+  cat ~/tennerg.ru/kozhevnya/tmp/passenger-debug.log
+  tail -50 ~/tennerg.ru/tennerg.ru.error.log
+  ls -la ~/tennerg.ru/kozhevnya/dist/beget.cjs
+
+Если dist/beget.cjs нет:
+  cd ~/tennerg.ru/kozhevnya && npm run build:beget
+
+
+ЛОКАЛЬНО (на компьютере)
+------------------------
+  npm start          — обычный запуск
+  npm run build:beget — пересобрать бандл для Beget
+  npm run test:smtp  — проверка почты
+
+================================================================================

@@ -1,0 +1,5 @@
+PassengerNodejs /home/s/soxxxlrp/.local/bin/node
+PassengerAppRoot /home/s/soxxxlrp/tennerg.ru/kozhevnya
+PassengerAppType node
+PassengerStartupFile passenger.cjs
+PassengerFriendlyErrorPages off

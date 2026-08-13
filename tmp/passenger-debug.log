@@ -1,0 +1,7 @@
+[2026-08-13T08:04:06.505Z] [build:beget] failed: Build failed with 1 error:
+error: Cannot use plugins in synchronous API calls
+[2026-08-13T08:04:06.908Z] [build:beget] failed: Build failed with 1 error:
+error: Cannot use plugins in synchronous API calls
+[2026-08-13T08:04:27.840Z] [build:beget] failed: Build failed with 1 error:
+server/config.js:10:14: ERROR: Top-level await is currently not supported with the "cjs" output format
+[2026-08-13T08:05:20.160Z] [build:beget] created C:\Users\KARABOGAZGOL ULTRA\Documents\GitHub\Кожевня основной лендинг\dist\beget.cjs
