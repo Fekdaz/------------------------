@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-function kozhevnya_rate_limit(array $config, string $ip, int $limit, string $namespace, int $windowSeconds = 3600): bool
+function kozhevnya_rate_limit(array $config, string $ip, int $limit, string $namespace, int $windowSeconds = 3600, bool $increment = true): bool
 {
   if ($limit <= 0) {
     return true;
@@ -34,8 +34,10 @@ function kozhevnya_rate_limit(array $config, string $ip, int $limit, string $nam
       return false;
     }
 
-    $entries[] = $now;
-    @file_put_contents($file, json_encode($entries), LOCK_EX);
+    if ($increment) {
+      $entries[] = $now;
+      @file_put_contents($file, json_encode($entries), LOCK_EX);
+    }
     return true;
   } catch (Throwable $e) {
     return true;
@@ -197,7 +199,7 @@ function kozhevnya_smtp_settings(array $config): array
 {
   $provider = strtolower(trim((string) ($config['smtp_provider'] ?? '')));
   $preset = kozhevnya_smtp_presets()[$provider] ?? [];
-  return array_merge($config, $preset);
+  return array_merge($preset, $config);
 }
 
 function kozhevnya_smtp_expect($fp, string $code): string
@@ -310,6 +312,16 @@ function kozhevnya_smtp_open(array $target, int $timeout)
   return $fp;
 }
 
+function kozhevnya_smtp_email(string $value): string
+{
+  $value = trim($value);
+  if ($value === '' || strpos($value, 'ВАШ_') !== false || strpos($value, 'YOUR_') !== false) {
+    return '';
+  }
+  $valid = filter_var($value, FILTER_VALIDATE_EMAIL);
+  return is_string($valid) ? $valid : '';
+}
+
 function kozhevnya_send_mail(array $config, string $subject, string $body): void
 {
   $smtp = kozhevnya_smtp_settings($config);
@@ -318,15 +330,19 @@ function kozhevnya_send_mail(array $config, string $subject, string $body): void
     throw new RuntimeException('Не указан to_email');
   }
 
-  $user = trim((string) ($smtp['smtp_auth_user'] ?? $smtp['smtp_user'] ?? ''));
+  $user = kozhevnya_smtp_email((string) ($smtp['smtp_user'] ?? ''));
+  $fromEmail = kozhevnya_smtp_email((string) ($smtp['from_email'] ?? '')) ?: $user;
+  $authUser = trim((string) ($smtp['smtp_auth_user'] ?? ''));
+  if ($authUser === '') {
+    $authUser = $user;
+  }
   $pass = (string) ($smtp['smtp_pass'] ?? '');
   $fromName = trim((string) ($smtp['from_name'] ?? 'Kozhevnya'));
   if ($fromName === '') {
     $fromName = 'Kozhevnya';
   }
-  $fromEmail = $user !== '' ? $user : trim((string) ($smtp['from_email'] ?? ''));
-  if ($fromEmail === '' || !filter_var($fromEmail, FILTER_VALIDATE_EMAIL)) {
-    throw new RuntimeException('Не указан smtp_user / from_email');
+  if ($fromEmail === '' || $authUser === '') {
+    throw new RuntimeException('PHP не прочитал smtp_user из php/config.local.php. На Beget: chmod 644 ~/tennerg.ru/public_html/php/config.local.php');
   }
 
   $timeout = max(5, (int) (($smtp['smtp_connection_timeout_ms'] ?? 15000) / 1000));
@@ -351,7 +367,7 @@ function kozhevnya_send_mail(array $config, string $subject, string $body): void
       }
 
       kozhevnya_smtp_cmd($fp, 'AUTH LOGIN', '334');
-      kozhevnya_smtp_cmd($fp, base64_encode($user), '334');
+      kozhevnya_smtp_cmd($fp, base64_encode($authUser), '334');
       kozhevnya_smtp_cmd($fp, base64_encode($pass), '235');
 
       $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';

@@ -7,24 +7,35 @@ header('X-Frame-Options: DENY');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 
 $phpRoot = __DIR__;
-$configFile = $phpRoot . '/config.local.php';
 $exampleFile = $phpRoot . '/config.example.php';
-if (!is_file($configFile) || !is_readable($configFile)) {
-  $configFile = $exampleFile;
-}
+$localFile = $phpRoot . '/config.local.php';
 
-try {
-  $config = include $configFile;
-} catch (Throwable $e) {
+$example = [];
+if (is_file($exampleFile)) {
   try {
-    $config = is_file($exampleFile) ? include $exampleFile : [];
-  } catch (Throwable $e2) {
-    $config = [];
+    $loaded = include $exampleFile;
+    if (is_array($loaded)) {
+      $example = $loaded;
+    }
+  } catch (Throwable $e) {
+    $example = [];
   }
 }
-if (!is_array($config)) {
-  $config = [];
+
+$local = [];
+if (is_file($localFile)) {
+  @chmod($localFile, 0644);
+  try {
+    $loaded = include $localFile;
+    if (is_array($loaded)) {
+      $local = $loaded;
+    }
+  } catch (Throwable $e) {
+    $local = [];
+  }
 }
+
+$config = array_merge($example, $local);
 
 $config['data_dir'] = $phpRoot . '/data';
 $config['consent_log_dir'] = $config['data_dir'] . '/consent-log';

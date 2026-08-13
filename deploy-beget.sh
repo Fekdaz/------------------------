@@ -64,6 +64,7 @@ RewriteEngine On
 RewriteBase /
 
 RewriteRule ^php/ - [F,L]
+RewriteRule ^favicon\.ico$ favicon.svg [L]
 RewriteRule ^api/?$ api.php [L,QSA]
 RewriteRule ^api/(.+)$ api.php [L,QSA]
 
@@ -159,7 +160,7 @@ sync_site() {
     || copy_assets "$SITE_ROOT/assets" \
     || warn "Папка assets/ не найдена. Картинки нужно загрузить в $PUBLIC_HTML/assets/"
 
-  for extra in fonts images media favicon.ico favicon.png apple-touch-icon.png robots.txt; do
+  for extra in fonts images media favicon.svg favicon.ico favicon.png apple-touch-icon.png robots.txt; do
     if [ -e "$APP_ROOT/$extra" ]; then
       if [ -d "$APP_ROOT/$extra" ]; then
         mkdir -p "$PUBLIC_HTML/$extra"

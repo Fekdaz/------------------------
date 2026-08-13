@@ -154,11 +154,6 @@ function kozhevnya_route_send_lead(array $config, string $ip): void
     kozhevnya_json(422, ['ok' => false, 'error' => 'Укажите корректный email']);
   }
 
-  $leadLimit = (int) ($config['rate_limit_per_hour'] ?? 10);
-  if (!kozhevnya_rate_limit($config, $ip, $leadLimit, 'leads')) {
-    kozhevnya_json(429, ['ok' => false, 'error' => 'Слишком много заявок. Попробуйте позже.']);
-  }
-
   kozhevnya_log_consent($config, [
     'type' => 'lead_submission',
     'loggedAt' => gmdate('c'),
