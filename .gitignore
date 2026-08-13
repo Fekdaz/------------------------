@@ -1,5 +1,7 @@
 js/legal-config.local.js
 server/config.local.js
 server/data/
+php/config.local.php
+php/data/
 node_modules/
 dist/

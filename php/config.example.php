@@ -1,0 +1,26 @@
+<?php
+return [
+  'smtp_provider' => 'yandex',
+  'smtp_user' => 'ВАШ_EMAIL@example.com',
+  'smtp_pass' => 'ВАШ_SMTP_КЛЮЧ',
+  'from_email' => 'noreply@kozhevnya.ru',
+  'from_name' => 'Сайт Kozhevnya',
+  'to_email' => 'info@kozhevnya.ru',
+  'smtp_connection_timeout_ms' => 15000,
+  'yandex_smart_captcha_secret' => '',
+  'allowed_origins' => [
+    'https://kozhevnya.ru',
+    'https://www.kozhevnya.ru',
+    'https://tennerg.ru',
+    'https://www.tennerg.ru',
+  ],
+  'allow_localhost_any_port' => false,
+  'trust_proxy' => true,
+  'rate_limit_per_hour' => 10,
+  'consent_log_rate_per_hour' => 120,
+  'captcha_rate_per_hour' => 60,
+  'captcha_invisible_min_ms' => 2000,
+  'global_api_rate_per_minute' => 120,
+  'journal_login_rate_per_hour' => 20,
+  'consent_journal_password' => 'ЗАДАЙТЕ_ПАРОЛЬ',
+];
