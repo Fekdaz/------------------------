@@ -1,6 +1,29 @@
 <?php
 declare(strict_types=1);
 
+function kozhevnya_journal_month_label(string $month): string
+{
+  static $names = [
+    '01' => 'январь',
+    '02' => 'февраль',
+    '03' => 'март',
+    '04' => 'апрель',
+    '05' => 'май',
+    '06' => 'июнь',
+    '07' => 'июль',
+    '08' => 'август',
+    '09' => 'сентябрь',
+    '10' => 'октябрь',
+    '11' => 'ноябрь',
+    '12' => 'декабрь',
+  ];
+  if (!preg_match('/^(\d{4})-(\d{2})$/', $month, $match)) {
+    return $month;
+  }
+  $name = $names[$match[2]] ?? $match[2];
+  return $name . ' ' . $match[1];
+}
+
 function kozhevnya_journal_months(array $config): array
 {
   $dir = $config['consent_log_dir'];
@@ -153,7 +176,7 @@ function kozhevnya_render_journal(array $config, bool $isAuthenticated, string $
   $monthOptions = '';
   foreach ($months as $month) {
     $selected = $selectedMonth === $month ? ' selected' : '';
-    $monthOptions .= '<option value="' . kozhevnya_h($month) . '"' . $selected . '>' . kozhevnya_h($month) . '</option>';
+    $monthOptions .= '<option value="' . kozhevnya_h($month) . '"' . $selected . '>' . kozhevnya_h(kozhevnya_journal_month_label($month)) . '</option>';
   }
 
   $rows = '';
@@ -205,6 +228,14 @@ function kozhevnya_render_journal(array $config, bool $isAuthenticated, string $
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Журнал согласий | Кожевня</title>
+  <link rel="icon" href="/assets/32.png" type="image/png" sizes="32x32" />
+  <link rel="icon" href="/assets/16.png" type="image/png" sizes="16x16" />
+  <link rel="icon" href="/assets/48.png" type="image/png" sizes="48x48" />
+  <link rel="icon" href="/assets/64.png" type="image/png" sizes="64x64" />
+  <link rel="icon" href="/assets/192.png" type="image/png" sizes="192x192" />
+  <link rel="icon" href="/assets/512.png" type="image/png" sizes="512x512" />
+  <link rel="apple-touch-icon" href="/assets/192.png" sizes="192x192" />
+  <link rel="manifest" href="/site.webmanifest" />
   <style>
     :root { color-scheme: light; font-family: Manrope, system-ui, sans-serif; background: #f6f1ea; color: #2a1f18; }
     body { margin: 0; padding: 24px; }

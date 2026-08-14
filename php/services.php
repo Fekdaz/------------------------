@@ -439,6 +439,9 @@ function kozhevnya_format_submitted_at(string $iso): string
     $dt->setTimezone(new DateTimeZone('Europe/Moscow'));
     return $dt->format('d.m.Y, H:i:s');
   } catch (Exception $e) {
+    if (preg_match('/^(\d{4})-(\d{2})-(\d{2})/', $iso, $match)) {
+      return $match[3] . '.' . $match[2] . '.' . $match[1];
+    }
     return $iso;
   }
 }

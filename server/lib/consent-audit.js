@@ -71,7 +71,9 @@ export function listConsentJournalMonths(config) {
 export function formatConsentTimestamp(iso) {
   if (!iso) return "—";
   try {
-    return new Date(iso).toLocaleString("ru-RU", {
+    const dt = new Date(iso);
+    if (Number.isNaN(dt.getTime())) return iso;
+    const parts = new Intl.DateTimeFormat("en-GB", {
       timeZone: "Europe/Moscow",
       day: "2-digit",
       month: "2-digit",
@@ -79,10 +81,34 @@ export function formatConsentTimestamp(iso) {
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
-    });
+      hour12: false,
+    }).formatToParts(dt);
+    const get = (type) => parts.find((part) => part.type === type)?.value || "";
+    return `${get("day")}.${get("month")}.${get("year")}, ${get("hour")}:${get("minute")}:${get("second")}`;
   } catch {
     return iso;
   }
+}
+
+const MONTH_NAMES = {
+  "01": "январь",
+  "02": "февраль",
+  "03": "март",
+  "04": "апрель",
+  "05": "май",
+  "06": "июнь",
+  "07": "июль",
+  "08": "август",
+  "09": "сентябрь",
+  "10": "октябрь",
+  "11": "ноябрь",
+  "12": "декабрь",
+};
+
+export function formatConsentMonthLabel(month) {
+  const match = /^(\d{4})-(\d{2})$/.exec(String(month || ""));
+  if (!match) return String(month || "");
+  return (MONTH_NAMES[match[2]] || match[2]) + " " + match[1];
 }
 
 const TYPE_LABELS = {

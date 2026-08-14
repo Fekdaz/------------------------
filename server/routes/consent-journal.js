@@ -1,5 +1,6 @@
 import {
   formatConsentDetails,
+  formatConsentMonthLabel,
   formatConsentTimestamp,
   formatConsentTypeLabel,
   getConsentEntryTimestamp,
@@ -108,7 +109,7 @@ function renderJournalPage({ months, entries, selectedMonth, isAuthenticated, lo
   const monthOptions = months
     .map((month) => {
       const selected = selectedMonth === month ? " selected" : "";
-      return `<option value="${escapeHtml(month)}"${selected}>${escapeHtml(month)}</option>`;
+      return `<option value="${escapeHtml(month)}"${selected}>${escapeHtml(formatConsentMonthLabel(month))}</option>`;
     })
     .join("");
 
@@ -167,6 +168,14 @@ function renderJournalPage({ months, entries, selectedMonth, isAuthenticated, lo
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Журнал согласий | Кожевня</title>
+  <link rel="icon" href="/assets/32.png" type="image/png" sizes="32x32" />
+  <link rel="icon" href="/assets/16.png" type="image/png" sizes="16x16" />
+  <link rel="icon" href="/assets/48.png" type="image/png" sizes="48x48" />
+  <link rel="icon" href="/assets/64.png" type="image/png" sizes="64x64" />
+  <link rel="icon" href="/assets/192.png" type="image/png" sizes="192x192" />
+  <link rel="icon" href="/assets/512.png" type="image/png" sizes="512x512" />
+  <link rel="apple-touch-icon" href="/assets/192.png" sizes="192x192" />
+  <link rel="manifest" href="/site.webmanifest" />
   <style>
     :root { color-scheme: light; font-family: Manrope, system-ui, sans-serif; background: #f6f1ea; color: #2a1f18; }
     body { margin: 0; padding: 24px; }
