@@ -196,17 +196,26 @@ sync_site() {
     fi
   done
 
-  local latest_php_config=""
-  local bak
-  for bak in $(ls -t "$BACKUP_DIR"/config.local.php.*.bak 2>/dev/null); do
-    if [ -f "$bak" ] && ! php_config_is_placeholder "$bak"; then
-      latest_php_config="$bak"
-      break
+  # Живой PHP читает только public_html/php/config.local.php.
+  # Если правили конфиг в папке деплоя (kozhevnya/php/), берём его.
+  # Иначе возвращаем предыдущий файл из public_html — иначе правки
+  # в kozhevnya/php/config.local.php затирались старым бэкапом.
+  if [ -f "$APP_ROOT/php/config.local.php" ] && ! php_config_is_placeholder "$APP_ROOT/php/config.local.php"; then
+    cp -f "$APP_ROOT/php/config.local.php" "$PUBLIC_HTML/php/config.local.php"
+    log "php/config.local.php взят из $APP_ROOT/php/config.local.php"
+  else
+    local latest_php_config=""
+    local bak
+    for bak in $(ls -t "$BACKUP_DIR"/config.local.php.*.bak 2>/dev/null); do
+      if [ -f "$bak" ] && ! php_config_is_placeholder "$bak"; then
+        latest_php_config="$bak"
+        break
+      fi
+    done
+    if [ -n "$latest_php_config" ]; then
+      cp -f "$latest_php_config" "$PUBLIC_HTML/php/config.local.php"
+      log "Восстановлен php/config.local.php из бэкапа"
     fi
-  done
-  if [ -n "$latest_php_config" ]; then
-    cp -f "$latest_php_config" "$PUBLIC_HTML/php/config.local.php"
-    log "Восстановлен php/config.local.php"
   fi
 
   local latest_legal
@@ -312,7 +321,8 @@ install_auto_update_cron() {
 }
 
 http_status() {
-  curl -sI "http://$SITE_DOMAIN" 2>/dev/null | head -n 1 | tr -d '\r'
+  # SSL на Beget часто редиректит http→https; следуем редиректу и проверяем итоговый ответ
+  curl -sI -L --max-redirs 5 "https://$SITE_DOMAIN" 2>/dev/null | grep -i '^HTTP/' | tail -n 1 | tr -d '\r'
 }
 
 show_diagnostics() {
@@ -369,16 +379,15 @@ main() {
   status="$(http_status || true)"
   log "Проверка HTTP: ${status:-нет ответа}"
 
-  if echo "$status" | grep -q "200"; then
-    log "===== УСПЕХ: сайт отвечает 200 OK ====="
-    log "Откройте: http://$SITE_DOMAIN"
-    log "Журнал согласий: http://$SITE_DOMAIN/api/consent-journal"
-    log "HTTPS: включите SSL (Let's Encrypt) в панели Beget"
+  if echo "$status" | grep -Eq "200|301|302"; then
+    log "===== УСПЕХ: сайт выложен (проверка: ${status:-ok}) ====="
+    log "Откройте: https://$SITE_DOMAIN"
+    log "Журнал согласий: https://$SITE_DOMAIN/api/consent-journal"
     exit 0
   fi
 
   show_diagnostics
-  fail "Сайт не ответил 200. Смотрите логи выше."
+  fail "Сайт не ответил 200/301. Смотрите логи выше."
 }
 
 main "$@"
