@@ -326,15 +326,18 @@ a {
 }
 
 #leather {
-  scroll-margin-top: -100px;
+  /* Низ шапки = верх контейнера фото (учитывается html scroll-padding-top) */
+  scroll-margin-top: 0;
 }
 
 #products {
-  scroll-margin-top: -110px;
+  /* Низ экрана = низ контейнера фото (через scrollIntoView block:end) */
+  scroll-margin-top: 0;
+  scroll-margin-bottom: 0;
 }
 
 #nearby {
-  scroll-margin-top: -50px;
+  scroll-margin-top: calc(-50px - 5vh);
 }
 
 /* --------------------------------------------------------------------------

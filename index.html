@@ -321,7 +321,7 @@
         </div>
       </section>
 
-      <section class="block block--leather" id="leather" aria-labelledby="leather-title">
+      <section class="block block--leather" aria-labelledby="leather-title">
         <div class="leather__content">
           <h2 id="leather-title" class="block__title leather__title">
             <span class="leather__title-line">Подберем любые цвета и</span>
@@ -344,10 +344,14 @@
             </a>
           </div>
         </div>
-        <div class="visual-slot visual-slot--right leather__visual-slot" aria-hidden="true">
+        <div
+          class="visual-slot visual-slot--right leather__visual-slot"
+          id="leather"
+          aria-hidden="true"
+        >
           <img
             class="leather__visual"
-            src="assets/leather-colors-swatches.png"
+            src="assets/leather-colors-swatches.png?v=20260815-1"
             alt=""
             width="1052"
             height="1273"
@@ -355,8 +359,8 @@
         </div>
       </section>
 
-      <section class="block block--products" id="products" aria-labelledby="products-title">
-        <div class="products__visual-slot" aria-hidden="true">
+      <section class="block block--products" aria-labelledby="products-title">
+        <div class="products__visual-slot" id="products" aria-hidden="true">
           <img
             class="products__visual"
             src="assets/products-catalog-visual.png"
@@ -900,14 +904,49 @@
     <script src="js/page-transition.js?v=20260813-6"></script>
     <script>
       (function () {
+        function scrollProducts(behavior) {
+          var target = document.getElementById("products");
+          if (!target) return;
+          var top =
+            window.scrollY +
+            target.getBoundingClientRect().bottom -
+            window.innerHeight +
+            window.innerHeight * 0.2;
+          window.scrollTo({
+            top: Math.max(0, top),
+            behavior: behavior || "smooth",
+          });
+        }
+
+        function scrollToHashTarget(hash, behavior) {
+          if (hash === "#products") {
+            scrollProducts(behavior);
+            return;
+          }
+          var target = document.querySelector(hash);
+          if (!target) return;
+          target.scrollIntoView({ behavior: behavior || "smooth", block: "start" });
+        }
+
+        document.querySelectorAll('a[href="#products"]').forEach(function (link) {
+          link.addEventListener("click", function (event) {
+            event.preventDefault();
+            if (history.pushState) {
+              history.pushState(null, "", "#products");
+            } else {
+              location.hash = "#products";
+            }
+            scrollProducts("smooth");
+          });
+        });
+
         var hash = location.hash;
-        if (hash !== "#cases" && hash !== "#leather") return;
-        var target = document.querySelector(hash);
-        if (!target) return;
-        target.scrollIntoView({ behavior: "auto", block: "start" });
-        window.setTimeout(function () {
-          document.documentElement.classList.remove("is-instant-scroll");
-        }, 50);
+        if (hash === "#cases" || hash === "#leather" || hash === "#products") {
+          scrollToHashTarget(hash, "auto");
+          window.setTimeout(function () {
+            document.documentElement.classList.remove("is-instant-scroll");
+          }, 50);
+        }
       })();
     </script>
   </body>
