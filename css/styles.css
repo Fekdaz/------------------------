@@ -2864,7 +2864,7 @@ body.nearby-tablet-expanded {
   }
 
   .block--leather .leather__visual-slot {
-    order: 2;
+    order: 3;
     margin-top: 0;
     grid-column: auto;
     grid-row: auto;
@@ -2899,12 +2899,13 @@ body.nearby-tablet-expanded {
   }
 
   .block--leather .leather__actions {
-    order: 3;
+    order: 2;
     grid-column: auto;
     grid-row: auto;
     width: 100%;
     max-width: 100%;
     margin-top: clamp(16px, 3vh, 24px);
+    margin-bottom: 0;
     padding-left: var(--mobile-gutter);
     padding-right: var(--mobile-gutter);
     box-sizing: border-box;
