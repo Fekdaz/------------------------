@@ -58,13 +58,14 @@ DirectoryIndex index.html
 
 <IfModule mime_module>
   AddHandler application/x-httpd-php82 .php
+  AddType image/vnd.microsoft.icon .ico
+  AddType image/x-icon .ico
 </IfModule>
 
 RewriteEngine On
 RewriteBase /
 
 RewriteRule ^php/ - [F,L]
-RewriteRule ^favicon\.ico$ assets/32.png [L]
 RewriteRule ^api/?$ api.php [L,QSA]
 RewriteRule ^api/(.+)$ api.php [L,QSA]
 
@@ -74,6 +75,9 @@ RewriteRule ^api/(.+)$ api.php [L,QSA]
   </FilesMatch>
   <FilesMatch "\.(css|js)$">
     Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "^(favicon\.ico|apple-touch-icon\.png|robots\.txt|sitemap\.xml)$">
+    Header set Cache-Control "public, max-age=86400"
   </FilesMatch>
 </IfModule>
 
@@ -185,7 +189,7 @@ sync_site() {
     || copy_assets "$SITE_ROOT/assets" \
     || warn "Папка assets/ не найдена. Картинки нужно загрузить в $PUBLIC_HTML/assets/"
 
-  for extra in fonts images media favicon.svg favicon.ico favicon.png apple-touch-icon.png site.webmanifest robots.txt; do
+  for extra in fonts images media favicon.svg favicon.ico favicon.png apple-touch-icon.png site.webmanifest robots.txt sitemap.xml; do
     if [ -e "$APP_ROOT/$extra" ]; then
       if [ -d "$APP_ROOT/$extra" ]; then
         mkdir -p "$PUBLIC_HTML/$extra"

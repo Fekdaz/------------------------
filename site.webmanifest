@@ -1,15 +1,17 @@
 {
   "name": "Кожевня",
   "short_name": "Кожевня",
-  "icons": [
-    { "src": "assets/16.png", "sizes": "16x16", "type": "image/png" },
-    { "src": "assets/32.png", "sizes": "32x32", "type": "image/png" },
-    { "src": "assets/48.png", "sizes": "48x48", "type": "image/png" },
-    { "src": "assets/64.png", "sizes": "64x64", "type": "image/png" },
-    { "src": "assets/192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "assets/512.png", "sizes": "512x512", "type": "image/png" }
-  ],
+  "description": "Производство кожаных изделий в Москве для маркетплейсов и корпоративных заказов. Кожевня / Zubrov.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "lang": "ru",
+  "display": "browser",
   "theme_color": "#2b1a12",
   "background_color": "#ffffff",
-  "display": "browser"
+  "icons": [
+    { "src": "/assets/48.png", "sizes": "48x48", "type": "image/png" },
+    { "src": "/assets/192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/assets/512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
 }

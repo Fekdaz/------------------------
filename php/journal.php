@@ -228,10 +228,11 @@ function kozhevnya_render_journal(array $config, bool $isAuthenticated, string $
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Журнал согласий | Кожевня</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
+  <link rel="icon" href="/assets/48.png" type="image/png" sizes="48x48" />
   <link rel="icon" href="/assets/32.png" type="image/png" sizes="32x32" />
   <link rel="icon" href="/assets/16.png" type="image/png" sizes="16x16" />
-  <link rel="icon" href="/assets/48.png" type="image/png" sizes="48x48" />
-  <link rel="icon" href="/assets/64.png" type="image/png" sizes="64x64" />
   <link rel="icon" href="/assets/192.png" type="image/png" sizes="192x192" />
   <link rel="icon" href="/assets/512.png" type="image/png" sizes="512x512" />
   <link rel="apple-touch-icon" href="/assets/192.png" sizes="192x192" />

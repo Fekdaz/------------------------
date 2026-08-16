@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /php/
+Disallow: /api/
+
+Host: tennerg.ru
+Sitemap: https://tennerg.ru/sitemap.xml
