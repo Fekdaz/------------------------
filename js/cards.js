@@ -85,19 +85,52 @@
     updateStackHeight();
   }
 
+  let heightSyncQueued = false;
+
+  function queueStackHeightUpdate() {
+    if (!isMobile() || heightSyncQueued) return;
+    heightSyncQueued = true;
+    window.requestAnimationFrame(() => {
+      heightSyncQueued = false;
+      updateStackHeight();
+    });
+  }
+
+  function clearMobileHeights() {
+    cards.forEach((card) => {
+      card.style.height = "";
+      card.style.minHeight = "";
+    });
+    stack.style.height = "";
+    stack.style.minHeight = "";
+  }
+
   function updateStackHeight() {
     if (!isMobile()) {
-      stack.style.height = "";
-      stack.style.minHeight = "";
+      clearMobileHeights();
       return;
     }
 
-    const frontCard = cards.find((card) => card.dataset.card === order.front);
-    if (!frontCard) return;
+    // Сначала измеряем естественную высоту контента каждой карточки
+    cards.forEach((card) => {
+      card.style.height = "auto";
+      card.style.minHeight = "0";
+    });
+
+    let maxHeight = 0;
+    cards.forEach((card) => {
+      maxHeight = Math.max(maxHeight, card.scrollHeight || card.offsetHeight);
+    });
+
+    if (maxHeight <= 0) return;
+
+    cards.forEach((card) => {
+      card.style.height = `${maxHeight}px`;
+      card.style.minHeight = `${maxHeight}px`;
+    });
 
     const { y } = getStackSteps();
-    const totalHeight = frontCard.offsetHeight + y * 2;
-
+    const totalHeight = maxHeight + y * 2;
     stack.style.height = `${totalHeight}px`;
     stack.style.minHeight = `${totalHeight}px`;
   }
@@ -234,11 +267,19 @@
     updateStackHeight();
   });
 
-  if (typeof window.ResizeObserver === "function") {
-    const resizeObserver = new window.ResizeObserver(() => {
-      if (isMobile()) updateStackHeight();
+  // После загрузки фото пересчитать общую высоту
+  cards.forEach((card) => {
+    card.querySelectorAll("img").forEach((img) => {
+      if (img.complete) return;
+      img.addEventListener("load", queueStackHeightUpdate);
     });
+  });
 
-    cards.forEach((card) => resizeObserver.observe(card));
+  if (typeof window.ResizeObserver === "function") {
+    const resizeObserver = new window.ResizeObserver(queueStackHeightUpdate);
+    cards.forEach((card) => {
+      const body = card.querySelector(".case-card__body") || card;
+      resizeObserver.observe(body);
+    });
   }
 })();

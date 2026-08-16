@@ -102,6 +102,16 @@
               </a>
             </div>
           </div>
+          <figure class="intro__mobile-visual intro__mobile-visual--hero" aria-hidden="true">
+            <img
+              class="intro__mobile-photo"
+              src="assets/intro-mobile-hero.png"
+              alt=""
+              width="1080"
+              height="1350"
+              loading="lazy"
+            />
+          </figure>
         </section>
 
         <figure class="intro__figure" aria-hidden="true">
@@ -140,6 +150,16 @@
               </a>
             </div>
           </div>
+          <figure class="intro__mobile-visual intro__mobile-visual--proof" aria-hidden="true">
+            <img
+              class="intro__mobile-photo"
+              src="assets/intro-mobile-proof.png?v=20260816-2"
+              alt=""
+              width="1080"
+              height="1350"
+              loading="lazy"
+            />
+          </figure>
         </section>
       </div>
 
@@ -286,13 +306,19 @@
 
       <section class="block block--competition" id="competition" aria-labelledby="competition-title">
         <div class="visual-slot visual-slot--left competition__visual-slot" aria-hidden="true">
-          <img
-            class="competition__visual"
-            src="assets/competition-custom-bag.png"
-            alt=""
-            width="1256"
-            height="960"
-          />
+          <picture>
+            <source
+              media="(max-width: 1024px)"
+              srcset="assets/competition-mobile.png"
+            />
+            <img
+              class="competition__visual"
+              src="assets/competition-custom-bag.png"
+              alt=""
+              width="1256"
+              height="960"
+            />
+          </picture>
         </div>
         <div class="competition__content">
           <h2 id="competition-title" class="block__title competition__title">
@@ -337,12 +363,6 @@
               Мы&nbsp;работаем с&nbsp;лучшими поставщиками кожи в&nbsp;РФ.
             </p>
           </div>
-          <div class="block__actions leather__actions">
-            <a class="btn btn--secondary" href="katalog-kozhi.html">
-              Посмотреть каталог кожи
-              <span class="btn__arrow" aria-hidden="true">→</span>
-            </a>
-          </div>
         </div>
         <div
           class="visual-slot visual-slot--right leather__visual-slot"
@@ -351,11 +371,17 @@
         >
           <img
             class="leather__visual"
-            src="assets/leather-colors-swatches.png?v=20260815-1"
+            src="assets/leather-colors-swatches.png?v=20260816-3"
             alt=""
             width="1052"
             height="1273"
           />
+        </div>
+        <div class="block__actions leather__actions">
+          <a class="btn btn--secondary" href="katalog-kozhi.html">
+            Посмотреть каталог кожи
+            <span class="btn__arrow" aria-hidden="true">→</span>
+          </a>
         </div>
       </section>
 
@@ -896,7 +922,7 @@
     <script src="js/third-party-scripts.js?v=20260813-4"></script>
     <script src="js/nearby-map.js?v=20260813-4"></script>
     <script src="js/nearby-tablet.js?v=20260813-4"></script>
-    <script src="js/cards.js?v=20260813-4"></script>
+    <script src="js/cards.js?v=20260816-1"></script>
     <script src="js/adaptive-layout.js?v=20260813-4"></script>
     <script src="js/mobile-nav.js?v=20260813-4"></script>
     <script src="js/cookie-consent.js?v=20260813-4"></script>
