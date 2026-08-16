@@ -3,7 +3,7 @@
  * В config.local.js: smtp_provider: "brevo" + smtp_user / smtp_pass.
  */
 export const SMTP_PROVIDERS = {
-  /** 300 писем/день бесплатно — https://www.brevo.com */
+  /** 300 писем/день бесплатно - https://www.brevo.com */
   brevo: {
     smtp_host: "smtp-relay.brevo.com",
     smtp_port: 587,
@@ -13,7 +13,7 @@ export const SMTP_PROVIDERS = {
     smtp_connect_host: "",
   },
 
-  /** ~500 писем/день — нужен пароль приложения Google */
+  /** ~500 писем/день - нужен пароль приложения Google */
   gmail: {
     smtp_host: "smtp.gmail.com",
     smtp_port: 465,
@@ -31,7 +31,7 @@ export const SMTP_PROVIDERS = {
     smtp_connect_host: "",
   },
 
-  /** 100 писем/день бесплатно — https://sendgrid.com */
+  /** 100 писем/день бесплатно - https://sendgrid.com */
   sendgrid: {
     smtp_host: "smtp.sendgrid.net",
     smtp_port: 587,

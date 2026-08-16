@@ -432,7 +432,7 @@ function kozhevnya_send_mail(array $config, string $subject, string $body): void
 function kozhevnya_format_submitted_at(string $iso): string
 {
   if ($iso === '') {
-    return '—';
+    return '-';
   }
   try {
     $dt = new DateTime($iso);
@@ -456,12 +456,12 @@ function kozhevnya_lead_email_body(array $payload, string $company, string $name
   $lines = [
     'Новая заявка с сайта tennerg.ru',
     '',
-    'Компания: ' . ($company !== '' ? $company : '—'),
+    'Компания: ' . ($company !== '' ? $company : '-'),
     'Имя: ' . $name,
     'Телефон: ' . $phone,
-    'Email: ' . ($email !== '' ? $email : '—'),
-    'Комментарий: ' . ($comment !== '' ? $comment : '—'),
-    'Страница: ' . ($page !== '' ? $page : '—'),
+    'Email: ' . ($email !== '' ? $email : '-'),
+    'Комментарий: ' . ($comment !== '' ? $comment : '-'),
+    'Страница: ' . ($page !== '' ? $page : '-'),
     '',
     '--- Согласия ---',
     'Время отправки: ' . kozhevnya_format_submitted_at($submittedAt),

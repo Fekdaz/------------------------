@@ -29,6 +29,6 @@ if (typeof globalThis.PhusionPassenger !== "undefined") {
   app.listen("passenger");
   write("listen(passenger) called");
 } else {
-  write("NO PhusionPassenger — export app");
+  write("NO PhusionPassenger - export app");
   module.exports = app;
 }

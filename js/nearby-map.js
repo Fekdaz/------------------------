@@ -201,7 +201,7 @@
       var lat = coords[0];
       var iframe = document.createElement("iframe");
       iframe.className = "nearby__map-iframe";
-      iframe.title = "Карта — Кожевня";
+      iframe.title = "Карта - Кожевня";
       iframe.allowFullscreen = true;
       iframe.referrerPolicy = "no-referrer-when-downgrade";
       iframe.src =

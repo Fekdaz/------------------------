@@ -176,7 +176,7 @@ export function registerApiRoutes(app, config) {
       consent,
     });
 
-    const subject = "Заявка с сайта Kozhevnya — " + name;
+    const subject = "Заявка с сайта Kozhevnya - " + name;
 
     try {
       const sent = await sendLeadEmail(config, subject, text);

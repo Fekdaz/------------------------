@@ -5,11 +5,11 @@ export default {
 
   /**
    * Бесплатная отправка заявок по почте (без Telegram):
-   * — brevo   : 300 писем/день, https://www.brevo.com (рекомендуется)
-   * — gmail   : ~500 писем/день, пароль приложения Google
-   * — mailru  : ящик @mail.ru + пароль для внешних приложений
-   * — sendgrid: 100 писем/день
-   * — yandex  : только если SMTP включён в тарифе
+   * - brevo   : 300 писем/день, https://www.brevo.com (рекомендуется)
+   * - gmail   : ~500 писем/день, пароль приложения Google
+   * - mailru  : ящик @mail.ru + пароль для внешних приложений
+   * - sendgrid: 100 писем/день
+   * - yandex  : только если SMTP включён в тарифе
    */
   smtp_provider: "brevo",
 

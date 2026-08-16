@@ -1,6 +1,6 @@
 /**
- * Card stack: desktop — stacked deck, click to bring forward.
- * Mobile — compact stack with swipe, dots, dynamic height.
+ * Card stack: desktop - stacked deck, click to bring forward.
+ * Mobile - compact stack with swipe, dots, dynamic height.
  */
 (function () {
   const stack = document.getElementById("cards-stack");

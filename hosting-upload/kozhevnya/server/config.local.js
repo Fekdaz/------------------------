@@ -2,7 +2,7 @@
 export default {
   port: 8080,
 
-  /** Яндекс.Почта — пароль приложения (Почта → Безопасность) */
+  /** Яндекс.Почта - пароль приложения (Почта → Безопасность) */
   smtp_provider: "yandex",
   smtp_user: "kozhevnya.ru@yandex.ru",
   smtp_pass: "dhozwfdahmleblfi",

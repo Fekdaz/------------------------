@@ -117,8 +117,8 @@ function renderJournalPage({ months, entries, selectedMonth, isAuthenticated, lo
       return `<tr>
         <td>${escapeHtml(formatConsentTimestamp(getConsentEntryTimestamp(entry)))}</td>
         <td>${escapeHtml(formatConsentTypeLabel(entry))}</td>
-        <td>${escapeHtml(String(entry.documentVersion || "—"))}</td>
-        <td>${escapeHtml(String(entry.ip || "—"))}</td>
+        <td>${escapeHtml(String(entry.documentVersion || "-"))}</td>
+        <td>${escapeHtml(String(entry.ip || "-"))}</td>
         <td class="details">${escapeHtml(formatConsentDetails(entry))}</td>
       </tr>`;
     })

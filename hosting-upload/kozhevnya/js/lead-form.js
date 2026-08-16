@@ -34,7 +34,7 @@
   }
 
   function formatSubmittedAt(iso) {
-    if (!iso) return "—";
+    if (!iso) return "-";
     try {
       return new Date(iso).toLocaleString("ru-RU", {
         timeZone: "Europe/Moscow",
@@ -54,14 +54,14 @@
     var personal = consentMeta && consentMeta.personal ? consentMeta.personal : {};
     var marketing = consentMeta && consentMeta.marketing ? consentMeta.marketing : {};
     var privacyVersion =
-      consentMeta && consentMeta.privacyPolicyVersion ? consentMeta.privacyPolicyVersion : "—";
+      consentMeta && consentMeta.privacyPolicyVersion ? consentMeta.privacyPolicyVersion : "-";
 
     var lines = [
       "--- Согласия ---",
       "Время отправки: " + formatSubmittedAt(submittedAt),
       "",
       "Согласие на обработку персональных данных: да (обязательное)",
-      "Версия документа: " + (personal.documentVersion || "—"),
+      "Версия документа: " + (personal.documentVersion || "-"),
       "Документ: " + (personal.documentPath || "personal-data-consent.html"),
       "Версия политики ПДн: " + privacyVersion,
     ];
@@ -69,7 +69,7 @@
     if (marketingConsent) {
       lines.push("");
       lines.push("Согласие на рекламу: да");
-      lines.push("Версия документа: " + (marketing.documentVersion || "—"));
+      lines.push("Версия документа: " + (marketing.documentVersion || "-"));
       lines.push("Документ: " + (marketing.documentPath || "marketing-consent.html"));
       lines.push("Текст: согласие на получение информационных и рекламных сообщений");
       lines.push("(marketing-consent.html)");
@@ -85,11 +85,11 @@
     return [
       "Новая заявка с сайта kozhevnya.ru",
       "",
-      "Компания: " + (values.company || "—"),
+      "Компания: " + (values.company || "-"),
       "Имя: " + values.name,
       "Телефон: " + values.phone,
-      "Email: " + (values.email || "—"),
-      "Комментарий: " + (values.comment || "—"),
+      "Email: " + (values.email || "-"),
+      "Комментарий: " + (values.comment || "-"),
       "Страница: " + window.location.href,
       "",
       buildConsentSection(marketingConsent, submittedAt, consentMeta),

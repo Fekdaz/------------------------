@@ -4,7 +4,7 @@ import { createSmtpTransport } from "./smtp-transport.js";
 
 function consentLogField(record, key) {
   const value = record?.[key];
-  return typeof value === "string" && value ? value : "—";
+  return typeof value === "string" && value ? value : "-";
 }
 
 export function buildConsentSection(payload, marketingConsent) {
@@ -21,7 +21,7 @@ export function buildConsentSection(payload, marketingConsent) {
     "Согласие на обработку персональных данных: да (обязательное)",
     "Версия документа: " + consentLogField(personal, "documentVersion"),
     "Документ: " + consentLogField(personal, "documentPath"),
-    "Версия политики ПДн: " + (privacyVersion || "—"),
+    "Версия политики ПДн: " + (privacyVersion || "-"),
   ];
 
   if (marketingConsent) {
@@ -41,12 +41,12 @@ export function buildLeadEmailBody(company, name, phone, email, comment, page, p
   return [
     "Новая заявка с сайта kozhevnya.ru",
     "",
-    "Компания: " + (company || "—"),
+    "Компания: " + (company || "-"),
     "Имя: " + name,
     "Телефон: " + phone,
-    "Email: " + (email || "—"),
-    "Комментарий: " + (comment || "—"),
-    "Страница: " + (page || "—"),
+    "Email: " + (email || "-"),
+    "Комментарий: " + (comment || "-"),
+    "Страница: " + (page || "-"),
     "",
     buildConsentSection(payload, marketingConsent),
   ].join("\n");

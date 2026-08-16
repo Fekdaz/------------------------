@@ -47,7 +47,7 @@ export function formatSmtpError(error) {
   const message = String(error?.message || "");
 
   if (code === "EAUTH" || message.includes("authentication failed")) {
-    return "Не удалось авторизоваться на SMTP. Проверьте smtp_user и smtp_pass (для Brevo/Gmail — пароль приложения или SMTP-ключ, не основной пароль).";
+    return "Не удалось авторизоваться на SMTP. Проверьте smtp_user и smtp_pass (для Brevo/Gmail - пароль приложения или SMTP-ключ, не основной пароль).";
   }
 
   if (

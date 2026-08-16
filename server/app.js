@@ -82,6 +82,6 @@ export async function verifySmtpOnStart() {
     await verifySmtpConnection(config);
     console.log("SMTP: подключение и авторизация успешны");
   } catch (error) {
-    console.error("SMTP: ошибка —", error?.message || error);
+    console.error("SMTP: ошибка -", error?.message || error);
   }
 }

@@ -57,7 +57,7 @@ export function json(res, status, payload) {
 }
 
 export function formatSubmittedAt(iso) {
-  if (!iso) return "—";
+  if (!iso) return "-";
   try {
     return new Date(iso).toLocaleString("ru-RU", {
       timeZone: "Europe/Moscow",

@@ -105,7 +105,7 @@ function kozhevnya_journal_type_label(array $entry): string
   if (!empty($entry['marketingConsent']) || !empty($entry['name']) || !empty($entry['phone'])) {
     return 'Заявка с формы';
   }
-  return $type !== '' ? $type : '—';
+  return $type !== '' ? $type : '-';
 }
 
 function kozhevnya_journal_details(array $entry): string
@@ -137,7 +137,7 @@ function kozhevnya_journal_details(array $entry): string
   } elseif (!empty($entry['page'])) {
     $parts[] = 'URL: ' . $entry['page'];
   }
-  return $parts ? implode('; ', $parts) : '—';
+  return $parts ? implode('; ', $parts) : '-';
 }
 
 function kozhevnya_journal_authenticated(array $config): bool
@@ -184,8 +184,8 @@ function kozhevnya_render_journal(array $config, bool $isAuthenticated, string $
     $rows .= '<tr>'
       . '<td>' . kozhevnya_h(kozhevnya_format_submitted_at(kozhevnya_journal_timestamp($entry))) . '</td>'
       . '<td>' . kozhevnya_h(kozhevnya_journal_type_label($entry)) . '</td>'
-      . '<td>' . kozhevnya_h((string) ($entry['documentVersion'] ?? '—')) . '</td>'
-      . '<td>' . kozhevnya_h((string) ($entry['ip'] ?? '—')) . '</td>'
+      . '<td>' . kozhevnya_h((string) ($entry['documentVersion'] ?? '-')) . '</td>'
+      . '<td>' . kozhevnya_h((string) ($entry['ip'] ?? '-')) . '</td>'
       . '<td class="details">' . kozhevnya_h(kozhevnya_journal_details($entry)) . '</td>'
       . '</tr>';
   }

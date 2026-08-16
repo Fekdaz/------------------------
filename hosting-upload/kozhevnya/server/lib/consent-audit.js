@@ -69,7 +69,7 @@ export function listConsentJournalMonths(config) {
 }
 
 export function formatConsentTimestamp(iso) {
-  if (!iso) return "—";
+  if (!iso) return "-";
   try {
     return new Date(iso).toLocaleString("ru-RU", {
       timeZone: "Europe/Moscow",
@@ -96,7 +96,7 @@ export function formatConsentTypeLabel(entry) {
   const type = String(entry.type || entry.event || "");
   if (type && TYPE_LABELS[type]) return TYPE_LABELS[type];
   if (entry.marketingConsent || entry.name || entry.phone) return "Заявка с формы";
-  return type || "—";
+  return type || "-";
 }
 
 export function formatConsentDetails(entry) {
@@ -124,5 +124,5 @@ export function formatConsentDetails(entry) {
   if (entry.pageUrl) parts.push("URL: " + entry.pageUrl);
   else if (entry.page) parts.push("URL: " + entry.page);
 
-  return parts.length ? parts.join("; ") : "—";
+  return parts.length ? parts.join("; ") : "-";
 }

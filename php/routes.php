@@ -172,7 +172,7 @@ function kozhevnya_route_send_lead(array $config, string $ip): void
   $text = kozhevnya_lead_email_body($payload, $company, $name, $phone, $email, $comment, $page, $marketingConsent);
 
   try {
-    kozhevnya_send_mail($config, 'Заявка с сайта Kozhevnya — ' . $name, $text);
+    kozhevnya_send_mail($config, 'Заявка с сайта Kozhevnya - ' . $name, $text);
   } catch (Throwable $error) {
     kozhevnya_json(502, ['ok' => false, 'error' => kozhevnya_smtp_error_message($error)]);
   }

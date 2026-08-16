@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Кожевня — деплой на Beget как обычный PHP/HTML-сайт (без Node/Passenger)
+# Кожевня - деплой на Beget как обычный PHP/HTML-сайт (без Node/Passenger)
 #
 #   cd ~/tennerg.ru/kozhevnya
 #   bash deploy-beget.sh
@@ -153,7 +153,7 @@ ensure_php_config() {
   if [ ! -f "$dest" ]; then
     cp -f "$APP_ROOT/php/config.example.php" "$dest"
   fi
-  warn "php/config.local.php — шаблон. Заполните smtp_user и smtp_pass: $dest"
+  warn "php/config.local.php - шаблон. Заполните smtp_user и smtp_pass: $dest"
 }
 
 sync_site() {
@@ -198,7 +198,7 @@ sync_site() {
 
   # Живой PHP читает только public_html/php/config.local.php.
   # Если правили конфиг в папке деплоя (kozhevnya/php/), берём его.
-  # Иначе возвращаем предыдущий файл из public_html — иначе правки
+  # Иначе возвращаем предыдущий файл из public_html - иначе правки
   # в kozhevnya/php/config.local.php затирались старым бэкапом.
   if [ -f "$APP_ROOT/php/config.local.php" ] && ! php_config_is_placeholder "$APP_ROOT/php/config.local.php"; then
     cp -f "$APP_ROOT/php/config.local.php" "$PUBLIC_HTML/php/config.local.php"
@@ -304,7 +304,7 @@ install_start_command() {
 
 install_auto_update_cron() {
   command -v crontab >/dev/null 2>&1 || {
-    warn "crontab недоступен — в панели Beget добавьте cron каждые 5 минут: bash $APP_ROOT/deploy-beget.sh"
+    warn "crontab недоступен - в панели Beget добавьте cron каждые 5 минут: bash $APP_ROOT/deploy-beget.sh"
     return 0
   }
 
@@ -343,7 +343,7 @@ acquire_lock() {
   exec 9>"$lock"
   if command -v flock >/dev/null 2>&1; then
     flock -n 9 || {
-      log "Деплой уже выполняется — пропуск"
+      log "Деплой уже выполняется - пропуск"
       exit 0
     }
   fi
@@ -367,7 +367,7 @@ main() {
   install_auto_update_cron
 
   if ! repo_needs_sync; then
-    log "Обновлений нет — сайт не перекладываю"
+    log "Обновлений нет - сайт не перекладываю"
     exit 0
   fi
 

@@ -1,7 +1,7 @@
 (function () {
   var initialized = false;
 
-  /** Маркетинговые пиксели — загружаются только после согласия на маркетинговые cookie */
+  /** Маркетинговые пиксели - загружаются только после согласия на маркетинговые cookie */
   function initMarketingTags() {
     if (initialized) return;
     if (typeof window.isMarketingCookiesAllowed === "function" && !window.isMarketingCookiesAllowed()) {

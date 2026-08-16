@@ -35,7 +35,7 @@ function toPhp(value, indent) {
 
 async function main() {
   if (!fs.existsSync(jsPath)) {
-    console.log("server/config.local.js не найден — php/config.local.php не создан");
+    console.log("server/config.local.js не найден - php/config.local.php не создан");
     process.exit(0);
   }
 
